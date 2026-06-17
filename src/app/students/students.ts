@@ -3,6 +3,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AddStudentDialog } from '../add-student-dialog/add-student-dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
+import { Student } from '../student';
 
 
 @Component({
@@ -14,12 +15,23 @@ import { MatTableModule } from '@angular/material/table';
 
 
 export class Students{
-  constructor(private dialog: MatDialog) {
-    this.students.set(JSON.parse(localStorage.getItem('students()') || '[]'));
-  }
-
   students = signal<any[]>([]);
   displayedColumns: string[] = ['name', 'rollno', 'email', 'grade', 'phone', 'gender', 'actions'];
+
+  constructor(private dialog: MatDialog, private studentService: Student) {
+    this.loadStudents();
+  }
+
+  loadStudents() {
+    this.studentService.getStudents().subscribe({
+      next: (data: any) => {
+        this.students.set(data);
+      },
+      error: (err) => {
+        console.log('error fetching students: ', err);
+      }
+    });
+  }
 
   openAddStudentDialog() {
     const dialogRef = this.dialog.open(AddStudentDialog);
@@ -27,30 +39,44 @@ export class Students{
     dialogRef.afterClosed().subscribe((result) => {
       console.log('dialog closed, result:', result);
       if (result) {
-        this.students.update(current => [...current, result]);
-        localStorage.setItem('students', JSON.stringify(this.students()));
+        this.studentService.addStudent(result).subscribe({
+          next: () => {
+            this.loadStudents();
+          },
+          error: (err) => {
+            console.log('error adding student: ', err);
+          }
+        })
       }
     });
   }
 
-  deleteStudent(index: number) {
-    this.students.update(current => current.filter((student, i) => i !== index));
-    localStorage.setItem('students', JSON.stringify(this.students()));
+  deleteStudent(student: any) {
+    this.studentService.deleteStudent(student._id).subscribe({
+      next: () => {
+        this.loadStudents();
+      },
+      error: (err) => {
+        console.log('error deleting student: ', err);
+      }
+    })
   }
 
-  editStudent(index: number) {
+  editStudent(student: any) {
     const dialogRef = this.dialog.open(AddStudentDialog, {
-      data: this.students()[index] // pass data of student to be edited
+      data: student 
     })
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.students.update(current => {
-          const updated = [...current];
-          updated[index] = result;
-          return updated;
+        this.studentService.updateStudent(student._id, result).subscribe({
+          next: () => {
+            this.loadStudents();
+          },
+          error: (err) => {
+            console.log('error updating students: ', err);
+          }
         });
-        localStorage.setItem('students', JSON.stringify(this.students()));
       }
     })
     
