@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule  } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Auth } from '../auth';
 
 @Component({
   selector: 'app-signup',
@@ -12,7 +13,7 @@ import { Router, RouterLink } from '@angular/router';
 export class Signup {
   signupForm: FormGroup; 
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private auth: Auth) {
     this.signupForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -22,9 +23,16 @@ export class Signup {
 
   handleSubmit() {
     if (this.signupForm.valid) {
-      const formValues = this.signupForm.value;
-      localStorage.setItem('signupData', JSON.stringify(formValues));
-      this.router.navigate(['/login']);
+      this.auth.signup(this.signupForm.value).subscribe({
+        next: (response) => {
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          console.log('error signing in: ', err);
+        }
+      });
+      
+      
     } else {
       console.log('error');
     }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule  } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Auth } from '../auth';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +12,7 @@ import { Router, RouterLink } from '@angular/router';
 export class Login {
   loginForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private auth: Auth) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]]
@@ -20,15 +21,15 @@ export class Login {
 
   handleSubmit() {
     if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-      const savedValues = JSON.parse(localStorage.getItem('signupData') || '{}');
-
-      if (savedValues.email === email && savedValues.password === password) {
-        localStorage.setItem('isLoggedIn', 'true');
-        this.router.navigate(['/students']);
-      } else {
-        console.log('incorrect credentials!');
-      }
+      this.auth.login(this.loginForm.value).subscribe({
+        next: (response: any) => {
+          localStorage.setItem('token', response.token);
+          this.router.navigate(['/students']);
+        },
+        error: (err) => {
+          console.log('error signing in: ', err);
+        }
+      });
       
     } else {
       console.log('error');
