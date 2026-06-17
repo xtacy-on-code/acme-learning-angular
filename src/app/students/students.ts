@@ -40,8 +40,8 @@ export class Students{
       console.log('dialog closed, result:', result);
       if (result) {
         this.studentService.addStudent(result).subscribe({
-          next: () => {
-            this.loadStudents();
+          next: (res: any) => {
+            this.students.update(current => [...current, res.student]);
           },
           error: (err) => {
             console.log('error adding student: ', err);
@@ -54,7 +54,7 @@ export class Students{
   deleteStudent(student: any) {
     this.studentService.deleteStudent(student._id).subscribe({
       next: () => {
-        this.loadStudents();
+        this.students.update(current => current.filter(s => s._id !== student._id));
       },
       error: (err) => {
         console.log('error deleting student: ', err);
@@ -70,8 +70,10 @@ export class Students{
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.studentService.updateStudent(student._id, result).subscribe({
-          next: () => {
-            this.loadStudents();
+          next: (res: any) => {
+            this.students.update(current =>
+              current.map(s => s._id === student._id ? res.student : s)
+            )
           },
           error: (err) => {
             console.log('error updating students: ', err);
