@@ -12,11 +12,15 @@
 
   <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
     <app-data-table
-      [data]="students()"
+      [data]="studentStore.students()"
       [columns]="columns"
       (editClicked)="editStudent($event)"
       (deleteClicked)="deleteStudent($event)">
     </app-data-table>
   </div>
+
+  <p class="text-sm text-gray">
+    Showing {{ studentStore.students().length }} students
+  </p>
 
 </div>
