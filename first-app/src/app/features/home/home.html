@@ -1,0 +1,39 @@
+<div class="flex flex-col gap-6">
+
+  <div>
+    <h1 class="text-xl font-semibold text-[#171923]">Welcome back</h1>
+    <p class="mt-1 text-sm text-[#6B7280]">Here's a quick overview of your students.</p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+    <a routerLink="/students"
+       class="group block cursor-pointer rounded-xl border border-[#E5E7EB] bg-white p-5 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.03] hover:border-[#5B5FEF] hover:shadow-md">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Total Students</p>
+        <svg class="h-4 w-4 text-[#6B7280] opacity-0 transition-opacity group-hover:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14"/>
+          <path d="M13 6l6 6-6 6"/>
+        </svg>
+      </div>
+      <p class="mt-2 text-2xl font-semibold text-[#171923] transition-colors group-hover:text-[#5B5FEF]">{{ totalStudents() }}</p>
+    </a>
+
+    <div class="rounded-xl border border-[#E5E7EB] bg-white p-5">
+      <p class="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Male</p>
+      <p class="mt-2 text-2xl font-semibold text-[#171923]">{{ maleCount() }}</p>
+    </div>
+
+    <div class="rounded-xl border border-[#E5E7EB] bg-white p-5">
+      <p class="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Female</p>
+      <p class="mt-2 text-2xl font-semibold text-[#171923]">{{ femaleCount() }}</p>
+    </div>
+
+    <div class="rounded-xl border border-[#E5E7EB] bg-white p-5">
+      <p class="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Other</p>
+      <p class="mt-2 text-2xl font-semibold text-[#171923]">{{ otherCount() }}</p>
+    </div>
+
+  </div>
+
+</div>

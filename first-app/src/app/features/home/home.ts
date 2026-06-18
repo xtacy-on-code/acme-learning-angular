@@ -1,16 +1,17 @@
-import { Component, computed } from '@angular/core';
-import { StudentStore } from '../student-store';
+import { Component, computed, inject } from '@angular/core';
+import { StudentStore } from '../../core/student-store';
 import { RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, MatButtonModule],
+  imports: [RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home {
-  constructor(public studentStore: StudentStore) {
+  studentStore = inject(StudentStore);
+
+  constructor() {
     this.studentStore.loadStudents();
   }
 

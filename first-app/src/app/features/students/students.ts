@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { AddStudentDialog } from '../add-student-dialog/add-student-dialog';
+import { AddStudentDialog } from './add-student-dialog/add-student-dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { DataTable } from "../data-table/data-table";
-import { StudentStore } from '../student-store';
+import { DataTable } from "../../shared/data-table/data-table";
+import { StudentStore } from '../../core/student-store';
 
 
 @Component({
@@ -24,7 +24,9 @@ export class Students{
   { key: 'gender', label: 'Gender' }
 ];
 
-  constructor(private dialog: MatDialog, public studentStore: StudentStore) {
+  studentStore = inject(StudentStore);
+
+  constructor(private dialog: MatDialog) {
     this.studentStore.loadStudents();
   }
 
@@ -39,7 +41,7 @@ export class Students{
     });
   }
 
-    editStudent(student: any) {
+  editStudent(student: any) {
     const dialogRef = this.dialog.open(AddStudentDialog, { data: student });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
@@ -51,6 +53,4 @@ export class Students{
   deleteStudent(student: any) {
     this.studentStore.deleteStudent(student);
   }
-
-  
 }
