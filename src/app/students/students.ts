@@ -3,12 +3,12 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AddStudentDialog } from '../add-student-dialog/add-student-dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { Student } from '../student';
-import { StudentTable } from "../student-table/student-table";
+import { DataTable } from "../data-table/data-table";
 
 
 @Component({
   selector: 'app-students',
-  imports: [MatButtonModule, StudentTable],
+  imports: [MatButtonModule, DataTable],
   templateUrl: './students.html',
   styleUrl: './students.css',
 })
@@ -16,6 +16,14 @@ import { StudentTable } from "../student-table/student-table";
 
 export class Students{
   students = signal<any[]>([]);
+  columns = [
+  { key: 'name', label: 'Name' },
+  { key: 'rollno', label: 'Roll No' },
+  { key: 'email', label: 'Email' },
+  { key: 'grade', label: 'Grade' },
+  { key: 'phone', label: 'Phone' },
+  { key: 'gender', label: 'Gender' }
+];
 
   constructor(private dialog: MatDialog, private studentService: Student) {
     this.loadStudents();

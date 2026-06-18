@@ -11,11 +11,12 @@
   </div>
 
   <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
-    <app-student-table
-      [students]="students()"
+    <app-data-table
+      [data]="students()"
+      [columns]="columns"
       (editClicked)="editStudent($event)"
       (deleteClicked)="deleteStudent($event)">
-    </app-student-table>
+    </app-data-table>
   </div>
 
 </div>
