@@ -1,0 +1,39 @@
+<div class="flex h-screen items-center justify-center bg-[#F7F8FA]">
+  <div class="w-full max-w-sm rounded-xl border border-[#E5E7EB] bg-white p-8 shadow-sm">
+    <div class="mb-8">
+      <span class="text-lg font-semibold text-[#171923]">Acme<span class="text-[#5B5FEF]">.</span></span>
+      <h2 class="mt-4 text-xl font-semibold text-[#171923]">Create your account</h2>
+      <p class="mt-1 text-sm text-[#6B7280]">Start by filling in your details.</p>
+    </div>
+
+    <form [formGroup]="signupForm" (ngSubmit)="handleSubmit()" class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-[#171923]">Name</label>
+        <input formControlName="name" type="text" placeholder="Your name"
+               class="rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm text-[#171923] outline-none transition-colors focus:border-[#5B5FEF] focus:ring-1 focus:ring-[#5B5FEF]">
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-[#171923]">Email</label>
+        <input formControlName="email" type="email" placeholder="you@example.com"
+               class="rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm text-[#171923] outline-none transition-colors focus:border-[#5B5FEF] focus:ring-1 focus:ring-[#5B5FEF]">
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-[#171923]">Password</label>
+        <input formControlName="password" type="password" placeholder="••••••••"
+               class="rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm text-[#171923] outline-none transition-colors focus:border-[#5B5FEF] focus:ring-1 focus:ring-[#5B5FEF]">
+      </div>
+
+      <button type="submit"
+              class="mt-2 rounded-lg bg-[#5B5FEF] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#4A4ED9]">
+        Sign up
+      </button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-[#6B7280]">
+      Already have an account?
+      <a routerLink="/login" class="font-medium text-[#5B5FEF] hover:text-[#4A4ED9]">Log in</a>
+    </p>
+  </div>
+</div>
