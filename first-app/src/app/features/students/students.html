@@ -119,9 +119,11 @@
       <app-data-table
         [data]="studentStore.students()"
         [columns]="columns"
+        [sortBy]="studentStore.sortBy()"
+        [sortOrder]="studentStore.sortOrder()"
+        (sortChanged)="onColumnSort($event)"
         (editClicked)="editStudent($event)"
         (deleteClicked)="deleteStudent($event)">
-
       </app-data-table>
 
     </div>

@@ -23,6 +23,8 @@ export const StudentStore = signalStore(
     limit: 10,
     total: 0,
     search: '',
+    sortBy: 'createdAt',
+    sortOrder: 'asc' as 'asc' | 'desc',
     filters: {
       grade: '',
       gender: '',
@@ -44,7 +46,7 @@ export const StudentStore = signalStore(
         tap(() => patchState(store, { loading: true })),
         switchMap(() =>
           studentService
-            .getStudents(store.page(), store.limit(), store.search(), store.filters())
+            .getStudents(store.page(), store.limit(), store.search(), store.filters(), store.sortBy(), store.sortOrder())
             .pipe(
               tap((data: any) =>
                 patchState(store, {
@@ -85,6 +87,15 @@ export const StudentStore = signalStore(
           filters: { ...store.filters(), [key]: value },
           page: 1
         });
+        fetch();
+      },
+
+      setSort(column: string) {
+        if (store.sortBy() === column) {
+          patchState(store, { sortOrder: store.sortOrder() === 'asc' ? 'desc' : 'asc', page: 1 });
+        } else {
+          patchState(store, { sortBy: column, sortOrder: 'asc', page: 1 });
+        }
         fetch();
       },
 

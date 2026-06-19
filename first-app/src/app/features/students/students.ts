@@ -17,13 +17,13 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator'
 
 export class Students{
   columns = [
-  { key: 'name', label: 'Name' },
-  { key: 'rollno', label: 'Roll No' },
-  { key: 'email', label: 'Email' },
-  { key: 'grade', label: 'Grade' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'gender', label: 'Gender' }
-];
+    { key: 'name', label: 'Name', sortable: true },
+    { key: 'rollno', label: 'Roll No', sortable: true },
+    { key: 'email', label: 'Email', sortable: true },
+    { key: 'grade', label: 'Grade', sortable: true },
+    { key: 'phone', label: 'Phone', sortable: true },
+    { key: 'gender', label: 'Gender', sortable: true }
+  ];
 
   studentStore = inject(StudentStore);
 
@@ -65,6 +65,10 @@ export class Students{
 
   onFilterChange(key: string, value: string) {
     this.studentStore.setFilter(key, value);
+  }
+
+  onColumnSort(key: string) {
+    this.studentStore.setSort(key);
   }
 
   clearFilters() {

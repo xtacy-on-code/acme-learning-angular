@@ -2,7 +2,24 @@
 
     @for (column of columns; track column.key) {
     <ng-container [matColumnDef]="column.key">
-        <th mat-header-cell *matHeaderCellDef class="!text-xs !font-semibold !uppercase !tracking-wide !text-[#6B7280]">{{ column.label }}</th>
+        <th mat-header-cell *matHeaderCellDef class="!text-xs !font-semibold !uppercase !tracking-wide !text-[#6B7280]">
+          @if (column.sortable) {
+            <button type="button" class="sort-btn" (click)="onSort(column.key)">
+              <span>{{ column.label }}</span>
+              <svg class="sort-icon h-3 w-3" [class.active]="sortBy === column.key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                @if (sortBy === column.key && sortOrder === 'asc') {
+                  <path d="M12 19V5M5 12l7-7 7 7"/>
+                } @else if (sortBy === column.key && sortOrder === 'desc') {
+                  <path d="M12 5v14M19 12l-7 7-7-7"/>
+                } @else {
+                  <path d="M8 9l4-4 4 4M16 15l-4 4-4-4"/>
+                }
+              </svg>
+            </button>
+          } @else {
+            {{ column.label }}
+          }
+        </th>
         <td mat-cell *matCellDef="let item" class="!text-sm !text-[#171923]">{{ item[column.key] }}</td>
     </ng-container>
     }

@@ -18,8 +18,17 @@ export class Student {
 
   private apiURL = 'http://localhost:5000/api/students';
 
-  getStudents(page: number = 1, limit: number = 10, search: string = '', filters: StudentFilters = {}) {
-    const params: Record<string, string | number> = { page, limit, search }
+  getStudents(page: number = 1, limit: number = 10, search: string = '', filters: StudentFilters = {}, sortBy: string = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc') {
+    console.log({
+    page,
+    limit,
+    search,
+    filters,
+    sortBy,
+    sortOrder
+  });
+    
+    const params: Record<string, string | number> = { page, limit, search, sortBy, sortOrder }
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {

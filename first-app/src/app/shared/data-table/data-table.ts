@@ -2,6 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 
+export interface DataTableColumn {
+  key: string;
+  label: string;
+  sortable?: boolean;
+}
+
 @Component({
   selector: 'app-data-table',
   imports: [MatTableModule, MatButtonModule],
@@ -9,14 +15,18 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrl: './data-table.css',
 })
 export class DataTable {
-  @Input() columns: { key: string; label: string}[] = [];
+  @Input() columns: DataTableColumn[] = [];
   @Input() data: any[] = [];
 
   @Input() showEdit: boolean=true;
   @Input() showDelete: boolean=true;
 
+  @Input() sortBy: string = '';
+  @Input() sortOrder: 'asc' | 'desc' = 'asc';
+
   @Output() editClicked = new EventEmitter<any>();
   @Output() deleteClicked = new EventEmitter<any>();
+  @Output() sortChanged = new EventEmitter<string>();
 
   onEdit(item: any) {
     this.editClicked.emit(item)
@@ -24,6 +34,10 @@ export class DataTable {
 
   onDelete(item: any) {
     this.deleteClicked.emit(item)
+  }
+
+  onSort(key: string) {
+    this.sortChanged.emit(key);
   }
 
   get displayedColumns(): string[] {

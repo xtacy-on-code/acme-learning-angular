@@ -2,11 +2,16 @@ const router = require('express').Router();
 const Student = require('../models/Student');
 const auth = require('../middleware/auth');
 
+const ALLOWED_SORT_FIELDS = ['name', 'rollno', 'email', 'grade', 'phone', 'gender', 'createdAt'];
+
 router.get('/', auth, async (req, res) => {
     try {
         const page = Math.max(parseInt(req.query.page) || 1, 1);
         const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
         const search = (req.query.search || '').trim();
+
+        const sortBy = ALLOWED_SORT_FIELDS.includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
+        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
         const query = {};
 
@@ -33,7 +38,7 @@ router.get('/', auth, async (req, res) => {
         const skip = (page - 1) * limit;
 
         const [students, total] = await Promise.all([
-            Student.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+            Student.find(query).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit),
             Student.countDocuments(query)
         ]);
 
