@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.action-btn {
+  border-radius: 9999px;
+  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+.action-btn.edit-btn:hover {
+  background-color: rgba(91, 95, 239, 0.1);
+  color: #5B5FEF;
+}
+
+.action-btn.delete-btn:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+}

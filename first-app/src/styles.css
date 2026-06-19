@@ -1,4 +1,40 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
-@import '@angular/material/prebuilt-themes/azure-blue.css';
+
+/* Branded scrollbar instead of the OS default */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Branded text selection color */
+::selection {
+  background: #C7CBFA;
+  color: #171923;
+}
+
+/* Calmer, on-brand focus ring instead of the harsh default blue */
+:focus-visible {
+  outline: 2px solid #7B7FF5;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+:root {
+  --mat-sys-surface: #ffffff;
+  --mat-sys-surface-container: #ffffff;
+  --mat-sys-surface-container-low: #ffffff;
+  --mat-sys-surface-container-high: #F7F8FA;
+  --mat-sys-on-surface: #171923;
+}

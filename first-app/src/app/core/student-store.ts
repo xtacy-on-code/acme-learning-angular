@@ -1,59 +1,122 @@
 import { inject } from '@angular/core';
-import { signalStore, withState, withMethods } from '@ngrx/signals'
-import { patchState } from '@ngrx/signals';
-import { Student } from './student';
+import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { debounceTime, switchMap, tap, catchError, pipe, EMPTY } from 'rxjs';
+import { Student, StudentFilters } from './student';
+
+interface Filters {
+  grade: string;
+  gender: string;
+  email: string;
+  phone: string;
+  rollno: string;
+}
 
 export const StudentStore = signalStore(
-  { providedIn : 'root' },
+  { providedIn: 'root' },
 
   withState({
     students: [] as any[],
-    loaded: false
+    loaded: false,
+    loading: false,
+    page: 1,
+    limit: 10,
+    total: 0,
+    search: '',
+    filters: {
+      grade: '',
+      gender: '',
+      email: '',
+      phone: '',
+      rollno: ''
+    } as Filters
   }),
-  
+
   withMethods((store) => {
     const studentService = inject(Student);
 
+    // Single source of truth for fetching. debounceTime coalesces rapid
+    // calls (typing), switchMap cancels any in-flight request that's been
+    // superseded by a newer one, so results never arrive out of order.
+    const fetch = rxMethod<void>(
+      pipe(
+        debounceTime(300),
+        tap(() => patchState(store, { loading: true })),
+        switchMap(() =>
+          studentService
+            .getStudents(store.page(), store.limit(), store.search(), store.filters())
+            .pipe(
+              tap((data: any) =>
+                patchState(store, {
+                  students: data.students,
+                  total: data.total,
+                  loaded: true,
+                  loading: false
+                })
+              ),
+              catchError((err) => {
+                console.log('error loading students:', err);
+                patchState(store, { loading: false });
+                return EMPTY; // keep the outer pipeline alive after an error
+              })
+            )
+        )
+      )
+    );
+
     return {
       loadStudents() {
-        if (store.loaded()) return; // if already loaded, no api call again
+        if (store.loaded()) return;
+        fetch();
+      },
 
-        studentService.getStudents().subscribe({
-          next: (data: any) => {
-            patchState(store, {students: data, loaded: true});
-          },
-          error: (err) => console.log('error loading students: ', err)
-        })
+      setPage(page: number) {
+        patchState(store, { page });
+        fetch();
+      },
+
+      setSearch(search: string) {
+        patchState(store, { search, page: 1 });
+        fetch();
+      },
+
+      setFilter(key: string, value: string) {
+        patchState(store, {
+          filters: { ...store.filters(), [key]: value },
+          page: 1
+        });
+        fetch();
+      },
+
+      clearAllFilters() {
+        patchState(store, {
+          search: '',
+          page: 1,
+          filters: { grade: '', gender: '', email: '', phone: '', rollno: '' }
+        });
+        fetch();
       },
 
       addStudent(data: any) {
         studentService.addStudent(data).subscribe({
-          next: (res: any) => {
-            patchState(store, { students: [...store.students(), res.student] });
-          },
-          error: (err) => console.log('error adding student: ', err)
+          next: () => fetch(),
+          error: (err) => console.log('error adding student:', err)
         });
       },
 
       updateStudent(id: string, data: any) {
         studentService.updateStudent(id, data).subscribe({
-          next: (res: any) => {
-            patchState(store, { students: store.students().map(s => s._id === id ? res.student : s)});
-          },
-          error: (err) => console.log('error updating student: ', err)
-        })
+          next: () => fetch(),
+          error: (err) => console.log('error updating student:', err)
+        });
       },
 
       deleteStudent(student: any) {
         studentService.deleteStudent(student._id).subscribe({
-          next: () => {
-            patchState(store, { students: store.students().filter(s => s._id !== student._id)});
-          },
-          error: (err) => {
-            console.log('error deleting student: ', err);
-          }
-        })
+          next: () => fetch(),
+          error: (err) => console.log('error deleting student:', err)
+        });
       }
-    }
+    };
   })
-)
+);

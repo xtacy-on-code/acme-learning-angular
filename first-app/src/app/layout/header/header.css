@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+header .rounded-full {
+  transition: box-shadow 0.18s ease;
+}
+
+header .rounded-full:hover {
+  box-shadow: 0 0 0 3px rgba(91, 95, 239, 0.25);
+}

@@ -14,7 +14,7 @@
         <td mat-cell *matCellDef="let item" class="!py-2">
           <div class="flex gap-2">
             @if (showEdit) {
-                <button mat-icon-button color="primary" (click)="onEdit(item)" aria-label="Edit">
+                <button mat-icon-button color="primary" class="action-btn edit-btn" (click)="onEdit(item)" aria-label="Edit">
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
@@ -22,7 +22,7 @@
             </button>
             }
             @if (showDelete) {
-                <button mat-icon-button color="warn" (click)="onDelete(item)" aria-label="Delete">
+                <button mat-icon-button color="warn" class="action-btn delete-btn" (click)="onDelete(item)" aria-label="Delete">
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 6h18"/>
                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -36,5 +36,5 @@
       </ng-container>
     }  
       <tr mat-header-row *matHeaderRowDef="displayedColumns" class="!bg-[#F7F8FA]"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:!bg-[#F7F8FA]"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="transition-colors duration-150 hover:!bg-[#F7F8FA]"></tr>
 </table>
