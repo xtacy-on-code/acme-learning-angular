@@ -64,9 +64,16 @@ router.get('/stats', auth, async (req, res) => {
     try {
         const stats = await getOrSet(
             'students:stats', async () => {
-                const [total, byGender] = await Promise.all([
+                const [total, byGender, byGrade] = await Promise.all([
                     Student.countDocuments({}),
-                    Student.aggregate([{ $group: { _id: '$gender', count: { $sum: 1 } } }])
+                    Student.aggregate([{ $group: { _id: '$gender', count: { $sum: 1 } } }]),
+                    // Grade distribution for the dashboard bar chart. Skip blank grades and
+                    // sort by grade so the bars come back in a stable order.
+                    Student.aggregate([
+                        { $match: { grade: { $ne: '' } } },
+                        { $group: { _id: '$grade', count: { $sum: 1 } } },
+                        { $sort: { _id: 1 } }
+                    ])
                 ]);
 
                 const counts = { male: 0, female: 0, other: 0 };
@@ -74,8 +81,10 @@ router.get('/stats', auth, async (req, res) => {
                     if (g._id && counts[g._id] !== undefined) counts[g._id] = g.count;
                 });
 
+                const grades = byGrade.map((g) => ({ grade: g._id, count: g.count }));
+
                 // Students with an empty gender count toward `total` but no bucket.
-                return ({ total, ...counts });
+                return ({ total, ...counts, byGrade: grades });
             }, 120
         );
 

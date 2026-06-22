@@ -56,4 +56,25 @@
 
   </div>
 
+  <!-- Charts -->
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+    <div class="rounded-xl border border-border bg-surface p-5 shadow-card">
+      <p class="text-sm font-semibold text-text">Gender breakdown</p>
+      <p class="mt-1 text-xs text-muted">Share of students by gender.</p>
+      <div class="mt-4">
+        <app-chart [config]="genderChartConfig()" />
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-surface p-5 shadow-card">
+      <p class="text-sm font-semibold text-text">Grade distribution</p>
+      <p class="mt-1 text-xs text-muted">Number of students in each grade.</p>
+      <div class="mt-4">
+        <app-chart [config]="gradeChartConfig()" />
+      </div>
+    </div>
+
+  </div>
+
 </div>

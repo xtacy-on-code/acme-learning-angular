@@ -23,7 +23,14 @@ export const StudentStore = signalStore(
     limit: 10,
     total: 0,
     // Whole-collection counts for the home dashboard (independent of pagination).
-    stats: { total: 0, male: 0, female: 0, other: 0 },
+    // `byGrade` drives the dashboard's grade-distribution bar chart.
+    stats: {
+      total: 0,
+      male: 0,
+      female: 0,
+      other: 0,
+      byGrade: [] as { grade: string; count: number }[]
+    },
     search: '',
     sortBy: 'createdAt',
     sortOrder: 'asc' as 'asc' | 'desc',

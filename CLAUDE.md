@@ -82,6 +82,20 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   title from the active route (`Router` `NavigationEnd`) and shows the current user's
   avatar/name from `ProfileStore`. `DataTable` takes a `loading` input and renders three states:
   skeleton rows while loading, a centered empty state when there are no rows, else the table.
+  `shared/chart` (`ChartComponent`, selector `app-chart`) is a thin reusable wrapper over
+  **Chart.js** (the lib is used directly — no `ng2-charts` — to avoid Angular-version peer-dep
+  conflicts): it takes a `config` **signal input** (a Chart.js `ChartConfiguration`) and an
+  `effect()` (re)creates the chart on a `<canvas>` whenever the config changes, destroying the
+  prior instance first (and in `ngOnDestroy`) to avoid canvas leaks. The **home dashboard** uses
+  it for a gender doughnut + grade-distribution bar chart; because canvas can't read CSS classes,
+  `Home` builds each `config` as a `computed()` that depends on both `StudentStore.stats()` and
+  `ThemeService.theme()` and reads `--c-*` colors via `getComputedStyle` — so a theme switch
+  recomputes the config and redraws the chart in the new palette. The `home` route is
+  **lazy-loaded** (`loadComponent` in `app.routes.ts`) so Chart.js ships in the dashboard's own
+  chunk rather than the initial bundle. Note `loadStats()` does `patchState(store, { stats: data })`
+  — a **wholesale replace** of the `stats` object, so any field the `/stats` payload omits (e.g. a
+  stale Redis cache from before `byGrade` existed) becomes `undefined`; the grade config defends
+  with `byGrade ?? []` before sorting/mapping.
 - **Class-name gotcha:** the profile HTTP service is `Profile` (`core/profile.ts`); the
   routed page component is therefore `UserProfile` (`features/profile/profile.ts`, selector
   `app-profile`) to avoid colliding with it — same way the service is `Student` and the
@@ -130,9 +144,14 @@ gates `app.listen`, serves the `uploads/` folder as static files
   across name/email/phone/rollno, exact-match filters for grade/gender (gender lowercased
   to match the schema enum), partial `$regex` filters for rollno/phone/email, and sorting
   restricted to an `ALLOWED_SORT_FIELDS` allowlist. The frontend store's query shape mirrors
-  this contract exactly — keep them in sync when changing either side. The `GET /` and
-  `GET /stats` responses are **Redis-cached** (see Caching below); the `POST`/`PUT`/`DELETE`
-  handlers each call `invalidatePattern('students:*')` to bust the cache after a mutation.
+  this contract exactly — keep them in sync when changing either side. `GET /stats` returns
+  whole-collection dashboard counts — `{ total, male, female, other, byGrade: [{ grade, count }] }`
+  (gender via a `$group` aggregation, `byGrade` via a second `$group` that skips blank grades).
+  Its `$sort: { _id: 1 }` on grade is **lexicographic** (`"10"` sorts before `"2"`), so the home
+  dashboard re-sorts `byGrade` numerically on the client — don't assume the array arrives in
+  natural order. The `GET /` and `GET /stats` responses are **Redis-cached** (see Caching below);
+  the `POST`/`PUT`/`DELETE` handlers each call `invalidatePattern('students:*')` to bust the cache
+  after a mutation.
 - `/api/profile` (`src/routes/profile.js`, `auth`-guarded) — the current user's own profile:
   `GET` returns `User.findById(req.user.userId).select('-password')`; `PUT` updates only a
   whitelist (`name/email/phone/bio/dob/address`, with empty `dob` coerced to `null`) and maps
