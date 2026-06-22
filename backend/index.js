@@ -1,11 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
-require('dotenv').config(); 
+require('dotenv').config();
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files as static URLs. This turns the uploads/ folder on disk
+// into web-reachable URLs, e.g. a file saved at
+//   backend/uploads/profile-images/<userId>.jpg
+// becomes  http://localhost:5000/uploads/profile-images/<userId>.jpg
+// Without this, multer would save the file but the browser could never load it.
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // connect to database
 mongoose.connect(process.env.MONGODB_URI)
@@ -20,7 +28,7 @@ app.get('/', (req, res) => {
 // server running
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port {$PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
 
 // auth route
@@ -30,3 +38,7 @@ app.use('/api/auth', authRoutes);
 // student routes
 const studentRoutes = require('./src/routes/student');
 app.use('/api/students', studentRoutes);
+
+// profile routes (current logged-in user's own profile)
+const profileRoutes = require('./src/routes/profile');
+app.use('/api/profile', profileRoutes);
