@@ -1,20 +1,20 @@
 <div class="flex flex-col gap-6">
 
   <div>
-    <h1 class="text-xl font-semibold text-[#171923]">My Profile</h1>
-    <p class="mt-1 text-sm text-[#6B7280]">View and update your personal details.</p>
+    <h1 class="text-2xl font-bold tracking-tight text-text">My Profile</h1>
+    <p class="mt-1 text-sm text-muted">View and update your personal details.</p>
   </div>
 
-  <div class="rounded-xl border border-[#E5E7EB] bg-white p-6">
+  <div class="rounded-xl border border-border bg-surface p-6 shadow-card">
 
     <!-- Avatar + upload -->
-    <div class="flex items-center gap-5 border-b border-[#E5E7EB] pb-6">
+    <div class="flex items-center gap-5 border-b border-border pb-6">
       <div class="relative">
         @if (avatarUrl()) {
           <img [src]="avatarUrl()" alt="Profile photo"
-               class="h-20 w-20 rounded-full object-cover ring-2 ring-[#E5E7EB]">
+               class="h-20 w-20 rounded-full object-cover ring-2 ring-border">
         } @else {
-          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-[#5B5FEF] text-2xl font-semibold text-white">
+          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-on-primary">
             {{ initial() }}
           </div>
         }
@@ -23,10 +23,10 @@
       <div class="flex flex-col gap-2">
         <!-- The button just clicks the hidden native file input. -->
         <button type="button" (click)="fileInput.click()" [disabled]="store.uploading()"
-                class="w-fit rounded-lg border border-[#E5E7EB] px-4 py-2 text-sm font-medium text-[#171923] transition-colors hover:border-[#5B5FEF] hover:text-[#5B5FEF] disabled:opacity-50">
+                class="w-fit rounded-lg border border-border px-4 py-2 text-sm font-medium text-text transition-colors hover:border-primary hover:text-primary disabled:opacity-50">
           {{ store.uploading() ? 'Uploading…' : 'Change photo' }}
         </button>
-        <p class="text-xs text-[#6B7280]">JPG or PNG, up to 2 MB.</p>
+        <p class="text-xs text-muted">JPG or PNG, up to 2 MB.</p>
         <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
       </div>
     </div>
@@ -68,7 +68,7 @@
       </div>
 
       <div class="flex justify-end">
-        <button mat-raised-button color="primary" type="submit"
+        <button mat-flat-button color="primary" type="submit"
                 [disabled]="profileForm.invalid || store.saving()">
           {{ store.saving() ? 'Saving…' : 'Save changes' }}
         </button>

@@ -17,9 +17,13 @@ export interface DataTableColumn {
 export class DataTable {
   @Input() columns: DataTableColumn[] = [];
   @Input() data: any[] = [];
+  @Input() loading: boolean = false;
 
   @Input() showEdit: boolean=true;
   @Input() showDelete: boolean=true;
+
+  // Fixed set of placeholder rows rendered while loading (skeleton state).
+  readonly skeletonRows = [0, 1, 2, 3, 4, 5];
 
   @Input() sortBy: string = '';
   @Input() sortOrder: 'asc' | 'desc' = 'asc';

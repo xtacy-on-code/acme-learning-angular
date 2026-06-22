@@ -13,6 +13,15 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <!-- Apply the saved theme before first paint to avoid a flash of the default theme. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('acme-theme');
+          if (t) document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <app-root></app-root>

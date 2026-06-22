@@ -1,8 +1,35 @@
-<table mat-table [dataSource]="data" class="w-full">
+@if (loading && !data.length) {
+  <!-- Skeleton loading: pulsing placeholder rows -->
+  <div>
+    @for (row of skeletonRows; track row) {
+      <div class="flex items-center gap-4 border-b border-border px-4 py-4">
+        @for (column of columns; track column.key) {
+          <div class="h-3.5 flex-1 animate-pulse rounded bg-surface-hover"></div>
+        }
+        <div class="h-3.5 w-14 animate-pulse rounded bg-surface-hover"></div>
+      </div>
+    }
+  </div>
+} @else if (!data.length) {
+  <!-- Empty state -->
+  <div class="flex flex-col items-center justify-center gap-3 px-6 py-20 text-center">
+    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-hover text-muted">
+      <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="4" width="18" height="16" rx="2"/>
+        <path d="M3 10h18M9 4v16"/>
+      </svg>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-text">No records found</p>
+      <p class="mt-1 text-sm text-muted">Try adjusting your search or filters.</p>
+    </div>
+  </div>
+} @else {
+  <table mat-table [dataSource]="data" class="w-full">
 
     @for (column of columns; track column.key) {
     <ng-container [matColumnDef]="column.key">
-        <th mat-header-cell *matHeaderCellDef class="!text-xs !font-semibold !uppercase !tracking-wide !text-[#6B7280]">
+        <th mat-header-cell *matHeaderCellDef class="!text-xs !font-semibold !uppercase !tracking-wide !text-muted">
           @if (column.sortable) {
             <button type="button" class="sort-btn" (click)="onSort(column.key)">
               <span>{{ column.label }}</span>
@@ -20,18 +47,18 @@
             {{ column.label }}
           }
         </th>
-        <td mat-cell *matCellDef="let item" class="!text-sm !text-[#171923]">{{ item[column.key] }}</td>
+        <td mat-cell *matCellDef="let item" class="!text-sm !text-text">{{ item[column.key] }}</td>
     </ng-container>
     }
 
-      
+
     @if (showDelete || showEdit) {
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="!text-xs !font-semibold !uppercase !tracking-wide !text-[#6B7280]">Actions</th>
+        <th mat-header-cell *matHeaderCellDef class="!text-xs !font-semibold !uppercase !tracking-wide !text-muted">Actions</th>
         <td mat-cell *matCellDef="let item" class="!py-2">
-          <div class="flex gap-2">
+          <div class="row-actions flex gap-1">
             @if (showEdit) {
-                <button mat-icon-button color="primary" class="action-btn edit-btn" (click)="onEdit(item)" aria-label="Edit">
+                <button mat-icon-button class="action-btn edit-btn" (click)="onEdit(item)" aria-label="Edit">
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
@@ -39,7 +66,7 @@
             </button>
             }
             @if (showDelete) {
-                <button mat-icon-button color="warn" class="action-btn delete-btn" (click)="onDelete(item)" aria-label="Delete">
+                <button mat-icon-button class="action-btn delete-btn" (click)="onDelete(item)" aria-label="Delete">
               <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 6h18"/>
                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -47,11 +74,12 @@
               </svg>
             </button>
             }
-            
+
           </div>
         </td>
       </ng-container>
-    }  
-      <tr mat-header-row *matHeaderRowDef="displayedColumns" class="!bg-[#F7F8FA]"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="transition-colors duration-150 hover:!bg-[#F7F8FA]"></tr>
+    }
+      <tr mat-header-row *matHeaderRowDef="displayedColumns" class="!bg-background"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row transition-colors duration-150 hover:!bg-surface-hover"></tr>
 </table>
+}

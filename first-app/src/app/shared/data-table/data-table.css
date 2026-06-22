@@ -17,7 +17,7 @@
   transition: color 0.15s ease;
 }
 .sort-btn:hover {
-  color: #5B5FEF;
+  color: var(--c-primary);
 }
 
 .sort-icon {
@@ -26,19 +26,30 @@
 }
 .sort-icon.active {
   opacity: 1;
-  color: #5B5FEF;
+  color: var(--c-primary);
+}
+
+/* Ghost action buttons: muted at rest, revealed on row hover / keyboard focus */
+.row-actions {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+tr.data-row:hover .row-actions,
+.row-actions:focus-within {
+  opacity: 1;
 }
 
 .action-btn {
   border-radius: 9999px;
+  color: var(--c-muted);
   transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 .action-btn:hover {
   transform: scale(1.1);
 }
 .action-btn.edit-btn:hover {
-  background-color: rgba(91, 95, 239, 0.15);
-  color: #5B5FEF;
+  background-color: color-mix(in srgb, var(--c-primary) 15%, transparent);
+  color: var(--c-primary);
 }
 .action-btn.delete-btn:hover {
   background-color: rgba(220, 38, 38, 0.15);

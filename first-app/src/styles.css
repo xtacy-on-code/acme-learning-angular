@@ -2,6 +2,147 @@
 
 @import 'tailwindcss';
 
+/*
+  THEME SYSTEM
+  ------------
+  Two layers:
+  1. Each [data-theme] block below defines raw color tokens (--c-*), built as a
+     3-step elevation ramp: background (darkest) -> surface -> surface-hover
+     (lightest), so cards/sidebar sit visually above the page.
+  2. @theme inline maps those into Tailwind's color namespace, so utilities like
+     bg-surface / text-primary / border-border resolve to var(--c-*) at runtime.
+     Flipping [data-theme] on <html> re-colors the whole app instantly.
+
+  ThemeService sets document.documentElement[data-theme]; the default is applied
+  via the :root fallback so the app is themed even before the service runs.
+*/
+@theme inline {
+  --color-primary: var(--c-primary);
+  --color-primary-hover: var(--c-primary-hover);
+  --color-on-primary: var(--c-on-primary);
+  --color-background: var(--c-background);
+  --color-surface: var(--c-surface);
+  --color-surface-hover: var(--c-surface-hover);
+  --color-text: var(--c-text);
+  --color-muted: var(--c-muted);
+  --color-border: var(--c-border);
+}
+
+/* Soft, theme-aware card elevation. Pairs with border-border for definition. */
+@utility shadow-card {
+  box-shadow: var(--c-shadow);
+}
+
+/* Default — warm off-white page, white cards, deep indigo primary, crisp text */
+:root,
+[data-theme='default'] {
+  --c-primary: #4f46e5;
+  --c-primary-hover: #4338ca;
+  --c-on-primary: #ffffff;
+  --c-background: #f5f4f0;
+  --c-surface: #ffffff;
+  --c-surface-hover: #edeae3;
+  --c-text: #1c1b29;
+  --c-muted: #6c6a7a;
+  --c-border: #e4e1d8;
+  --c-shadow: 0 1px 2px 0 rgb(20 20 40 / 0.04), 0 4px 12px -3px rgb(20 20 40 / 0.08);
+  color-scheme: light;
+}
+
+/* Dark — true dark, cool charcoal surface, electric violet (VS Code dark vibe) */
+[data-theme='dark'] {
+  --c-primary: #a78bfa;
+  --c-primary-hover: #c4b5fd;
+  --c-on-primary: #191427;
+  --c-background: #111318;
+  --c-surface: #1c1f26;
+  --c-surface-hover: #2a2e38;
+  --c-text: #e7e7f0;
+  --c-muted: #9aa4b7;
+  --c-border: #2d323e;
+  --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+}
+
+/* Ocean — deep navy water, vivid cyan; saturated blue to read distinct from Dark */
+[data-theme='ocean'] {
+  --c-primary: #22d3ee;
+  --c-primary-hover: #67e8f9;
+  --c-on-primary: #042530;
+  --c-background: #060d1f;
+  --c-surface: #0d1f3c;
+  --c-surface-hover: #163357;
+  --c-text: #d6ecf9;
+  --c-muted: #7fa6c8;
+  --c-border: #1d3a63;
+  --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(2 12 30 / 0.6);
+  color-scheme: dark;
+}
+
+/* Forest — dark green-black, bright emerald; earthy and rich */
+[data-theme='forest'] {
+  --c-primary: #34d399;
+  --c-primary-hover: #6ee7b7;
+  --c-on-primary: #04231a;
+  --c-background: #0a1a0f;
+  --c-surface: #132a1a;
+  --c-surface-hover: #1d3d28;
+  --c-text: #d4f0de;
+  --c-muted: #7fae90;
+  --c-border: #21422d;
+  --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(2 15 8 / 0.6);
+  color-scheme: dark;
+}
+
+/* Sunset — near-black warm, dark sienna surface, vivid amber; warm and dramatic */
+[data-theme='sunset'] {
+  --c-primary: #fb923c;
+  --c-primary-hover: #fdba74;
+  --c-on-primary: #2a1607;
+  --c-background: #1a0f0a;
+  --c-surface: #2a1810;
+  --c-surface-hover: #3d2417;
+  --c-text: #fce7d6;
+  --c-muted: #c19a7e;
+  --c-border: #3f2819;
+  --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(15 6 2 / 0.6);
+  color-scheme: dark;
+}
+
+/*
+  Angular Material reads its colors from --mat-sys-* design tokens. We DON'T use
+  the Material SCSS theming system; instead we point those tokens at our own
+  --c-* vars so Material surfaces (the students table, paginator, dialog, the
+  profile form fields, and filled/elevated/outlined buttons) follow the active
+  theme. Mapped once here — values flow through whichever [data-theme] is active.
+*/
+:root {
+  /* Surfaces, layered to match our elevation ramp */
+  --mat-sys-surface: var(--c-surface);
+  --mat-sys-surface-container-lowest: var(--c-background);
+  --mat-sys-surface-container-low: var(--c-surface);
+  --mat-sys-surface-container: var(--c-surface);
+  --mat-sys-surface-container-high: var(--c-surface-hover);
+  --mat-sys-surface-container-highest: var(--c-surface-hover);
+  --mat-sys-surface-variant: var(--c-surface-hover);
+  --mat-sys-background: var(--c-background);
+
+  /* Text / icons */
+  --mat-sys-on-surface: var(--c-text);
+  --mat-sys-on-surface-variant: var(--c-muted);
+
+  /* Outlines / dividers */
+  --mat-sys-outline: var(--c-border);
+  --mat-sys-outline-variant: var(--c-border);
+
+  /* Primary — drives filled buttons (bg=primary, text=on-primary) and accents */
+  --mat-sys-primary: var(--c-primary);
+  --mat-sys-on-primary: var(--c-on-primary);
+  --mat-sys-primary-container: color-mix(in srgb, var(--c-primary) 22%, var(--c-surface));
+  --mat-sys-on-primary-container: var(--c-text);
+  --mat-sys-inverse-primary: var(--c-primary);
+}
+
 /* Branded scrollbar instead of the OS default */
 ::-webkit-scrollbar {
   width: 8px;
@@ -11,30 +152,29 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: var(--c-border);
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: var(--c-muted);
 }
 
 /* Branded text selection color */
 ::selection {
-  background: #C7CBFA;
-  color: #171923;
+  background: color-mix(in srgb, var(--c-primary) 30%, transparent);
+  color: var(--c-text);
 }
 
 /* Calmer, on-brand focus ring instead of the harsh default blue */
 :focus-visible {
-  outline: 2px solid #7B7FF5;
+  outline: 2px solid var(--c-primary);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-:root {
-  --mat-sys-surface: #ffffff;
-  --mat-sys-surface-container: #ffffff;
-  --mat-sys-surface-container-low: #ffffff;
-  --mat-sys-surface-container-high: #F7F8FA;
-  --mat-sys-on-surface: #171923;
+/* Crisp font rendering for the dashboard typography */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }

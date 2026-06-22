@@ -1,22 +1,29 @@
-<aside class="flex h-full w-60 flex-col bg-[#1E2535] py-6">
-  <div class="px-6 pb-8">
-    <span class="text-lg font-semibold text-white">Acme<span class="text-[#7B7FF5]">.</span></span>
+<aside class="flex h-full w-64 flex-col border-r border-border bg-surface">
+  <!-- Brand -->
+  <div class="flex items-center gap-2.5 px-5 py-5">
+    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-on-primary">
+      A
+    </div>
+    <span class="text-base font-bold tracking-tight text-text">Acme</span>
   </div>
 
-  <nav class="flex flex-col gap-1 px-3">
+  <!-- Nav -->
+  <nav class="flex flex-1 flex-col gap-1 px-3 pt-2">
+    <p class="px-3 pb-1 text-xs font-semibold uppercase tracking-widest text-muted">Menu</p>
+
     <a routerLink="/home"
-       routerLinkActive="bg-[#272F45] text-white border-[#7B7FF5]"
-       class="flex items-center gap-3 rounded-md border-l-2 border-transparent px-3 py-2.5 text-sm font-medium text-[#9CA3AF] transition-colors hover:bg-[#272F45] hover:text-white">
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+       routerLinkActive="bg-primary/10 text-primary border-primary"
+       class="flex items-center gap-3 rounded-lg border-l-2 border-transparent px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-hover hover:text-text">
+      <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5Z"/>
       </svg>
       Home
     </a>
 
     <a routerLink="/students"
-       routerLinkActive="bg-[#272F45] text-white border-[#7B7FF5]"
-       class="flex items-center gap-3 rounded-md border-l-2 border-transparent px-3 py-2.5 text-sm font-medium text-[#9CA3AF] transition-colors hover:bg-[#272F45] hover:text-white">
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+       routerLinkActive="bg-primary/10 text-primary border-primary"
+       class="flex items-center gap-3 rounded-lg border-l-2 border-transparent px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-hover hover:text-text">
+      <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="9" rx="1"/>
         <rect x="14" y="3" width="7" height="5" rx="1"/>
         <rect x="14" y="12" width="7" height="9" rx="1"/>
@@ -26,9 +33,9 @@
     </a>
 
     <a routerLink="/profile"
-       routerLinkActive="bg-[#272F45] text-white border-[#7B7FF5]"
-       class="flex items-center gap-3 rounded-md border-l-2 border-transparent px-3 py-2.5 text-sm font-medium text-[#9CA3AF] transition-colors hover:bg-[#272F45] hover:text-white">
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+       routerLinkActive="bg-primary/10 text-primary border-primary"
+       class="flex items-center gap-3 rounded-lg border-l-2 border-transparent px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-hover hover:text-text">
+      <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>
       </svg>
@@ -36,10 +43,16 @@
     </a>
   </nav>
 
-  <div class="mt-auto px-3">
+  <!-- Bottom: theme + logout, separated by a divider -->
+  <div class="mt-auto flex flex-col gap-3 border-t border-border px-3 py-4">
+    <div class="flex flex-col gap-2 px-3">
+      <span class="text-xs font-semibold uppercase tracking-widest text-muted">Theme</span>
+      <app-theme-picker />
+    </div>
+
     <button (click)="logout()"
-            class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-[#9CA3AF] transition-colors hover:bg-[#272F45] hover:text-white">
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-hover hover:text-text">
+      <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <path d="M16 17l5-5-5-5"/>
         <path d="M21 12H9"/>

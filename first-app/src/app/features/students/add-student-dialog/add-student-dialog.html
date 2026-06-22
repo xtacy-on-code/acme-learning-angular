@@ -1,11 +1,11 @@
-<h2 mat-dialog-title class="!text-lg !font-semibold !text-[#171923]">
+<h2 mat-dialog-title class="!text-lg !font-semibold !text-text">
   {{ data ? 'Edit Student' : 'Add Student' }}
 </h2>
 
 <form [formGroup]="studentForm" (ngSubmit)="handleSubmit()">
   <mat-dialog-content class="!flex !flex-col !gap-1 !pt-2">
 
-    <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Basic details</p>
+    <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Basic details</p>
     <div class="grid grid-cols-2 gap-x-3">
       <mat-form-field appearance="outline" class="col-span-2">
         <mat-label>Name</mat-label>
@@ -27,7 +27,7 @@
       </mat-form-field>
     </div>
 
-    <p class="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Contact</p>
+    <p class="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-muted">Contact</p>
     <div class="grid grid-cols-2 gap-x-3">
       <mat-form-field appearance="outline">
         <mat-label>Email</mat-label>
@@ -45,9 +45,9 @@
       </mat-form-field>
     </div>
 
-    <p class="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Other details</p>
+    <p class="mb-1 mt-2 text-xs font-semibold uppercase tracking-wide text-muted">Other details</p>
     <div class="mb-3 flex flex-col gap-1">
-      <span class="text-xs text-[#6B7280]">Gender</span>
+      <span class="text-xs text-muted">Gender</span>
       <mat-radio-group formControlName="gender" class="flex gap-4">
         <mat-radio-button value="male">Male</mat-radio-button>
         <mat-radio-button value="female">Female</mat-radio-button>
@@ -86,7 +86,7 @@
 
   <mat-dialog-actions align="end" class="!pt-3">
     <button mat-button type="button" mat-dialog-close>Cancel</button>
-    <button mat-raised-button color="primary" type="submit" [disabled]="studentForm.invalid">
+    <button mat-flat-button color="primary" type="submit" [disabled]="studentForm.invalid">
       {{ data ? 'Save Changes' : 'Add Student' }}
     </button>
   </mat-dialog-actions>

@@ -1,151 +1,108 @@
-<div class="flex h-full min-h-0 flex-col gap-2 bg-[#F8FAFC] p-2">
+<div class="flex h-full min-h-0 flex-col gap-5">
 
-  <!-- Header -->
+  <!-- Page heading -->
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-text">Students</h1>
+      <p class="mt-1 text-sm text-muted">Manage and search your student records.</p>
+    </div>
 
-  <div class="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-white px-5 py-2 shadow-sm">
-
-    <h1 class="text-xl font-semibold text-[#171923]">
-      📚 Students
-    </h1>
-
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="openAddStudentDialog()">
-
+    <button mat-flat-button color="primary" (click)="openAddStudentDialog()">
       + Add Student
-
     </button>
-
   </div>
 
   <!-- Search + Filters -->
-
-  <div class="rounded-xl border border-[#E5E7EB] bg-white p-2 shadow-sm">
-
+  <div class="rounded-xl border border-border bg-surface p-3 shadow-card">
     <div class="flex flex-wrap items-center gap-2">
 
       <!-- Search -->
-
       <div class="relative flex-1 min-w-[260px]">
-
         <svg
-          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2">
-
+          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="7" />
           <path d="m21 21-4.3-4.3" />
-
         </svg>
-
         <input
           type="text"
           placeholder="Search students..."
           [value]="studentStore.search()"
           (input)="onSearch($any($event.target).value)"
-          class="filter-control w-full rounded-lg border border-[#E5E7EB] py-2 pl-10 pr-4 text-sm outline-none focus:border-[#5B5FEF] focus:ring-2 focus:ring-[#5B5FEF]/20">
-
+          class="filter-control w-full rounded-lg border border-border bg-surface py-2 pl-10 pr-4 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
       </div>
 
       <!-- Grade -->
-
       <select
         [value]="studentStore.filters().grade"
         (change)="onFilterChange('grade', $any($event.target).value)"
-        class="filter-control rounded-lg border border-[#E5E7EB] px-4 py-2 text-sm outline-none focus:border-[#5B5FEF]">
-
+        class="filter-control rounded-lg border border-border bg-surface px-4 py-2 text-sm text-text outline-none focus:border-primary">
         <option value="">All Grades</option>
         @for (g of [1,2,3,4,5,6,7,8,9,10,11,12]; track g) {
           <option [value]="g">Grade {{ g }}</option>
         }
-
       </select>
 
       <!-- Gender -->
-
       <select
         [value]="studentStore.filters().gender"
         (change)="onFilterChange('gender', $any($event.target).value)"
-        class="filter-control rounded-lg border border-[#E5E7EB] px-4 py-2 text-sm outline-none focus:border-[#5B5FEF]">
-
+        class="filter-control rounded-lg border border-border bg-surface px-4 py-2 text-sm text-text outline-none focus:border-primary">
         <option value="">All Genders</option>
         <option value="male">Male</option>
         <option value="female">Female</option>
         <option value="other">Other</option>
-
       </select>
 
       <!-- Roll No -->
-
       <input
         type="text"
         placeholder="Roll No"
         [value]="studentStore.filters().rollno"
         (input)="onFilterChange('rollno', $any($event.target).value)"
-        class="filter-control w-32 rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm outline-none focus:border-[#5B5FEF] focus:ring-2 focus:ring-[#5B5FEF]/20">
+        class="filter-control w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
 
       <!-- Phone -->
-
       <input
         type="text"
         placeholder="Phone"
         [value]="studentStore.filters().phone"
         (input)="onFilterChange('phone', $any($event.target).value)"
-        class="filter-control w-40 rounded-lg border border-[#E5E7EB] px-3 py-2 text-sm outline-none focus:border-[#5B5FEF] focus:ring-2 focus:ring-[#5B5FEF]/20">
+        class="filter-control w-40 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
 
       <!-- Reset Filters -->
-
       <button
-        class="reset-btn rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
+        class="reset-btn rounded-lg bg-surface-hover px-4 py-2 text-sm font-medium text-muted hover:text-text"
         (click)="clearFilters()">
-
         ↺ Reset
-
       </button>
 
     </div>
-
   </div>
 
   <!-- Table -->
-
-  <div class="flex flex-1 min-h-0 flex-col overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-sm">
+  <div class="flex flex-1 min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-card">
 
     <div class="flex-1 overflow-auto">
-
       <app-data-table
         [data]="studentStore.students()"
         [columns]="columns"
+        [loading]="studentStore.loading()"
         [sortBy]="studentStore.sortBy()"
         [sortOrder]="studentStore.sortOrder()"
         (sortChanged)="onColumnSort($event)"
         (editClicked)="editStudent($event)"
         (deleteClicked)="deleteStudent($event)">
       </app-data-table>
-
     </div>
 
-    <div class="flex items-center justify-between border-t border-[#E5E7EB] bg-[#FAFBFC] px-4 py-2">
-
-      <p class="text-sm text-[#6B7280]">
-
+    <div class="flex items-center justify-between border-t border-border px-4 py-2.5">
+      <p class="text-sm text-muted">
         Showing
-
-        <span class="font-semibold text-[#171923]">
-          {{ studentStore.students().length }}
-        </span>
-
+        <span class="font-semibold text-text">{{ studentStore.students().length }}</span>
         of
-
-        <span class="font-semibold text-[#171923]">
-          {{ studentStore.total() }}
-        </span>
-
+        <span class="font-semibold text-text">{{ studentStore.total() }}</span>
         students
-
       </p>
 
       <mat-paginator
@@ -155,9 +112,7 @@
         [hidePageSize]="true"
         (page)="onPageChange($event)"
         class="!bg-transparent">
-
       </mat-paginator>
-
     </div>
 
   </div>

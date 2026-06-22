@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from "@angular/router";
+import { ThemePicker } from "../../shared/theme-picker/theme-picker";
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, ThemePicker],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })

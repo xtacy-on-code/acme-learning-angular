@@ -29,4 +29,14 @@ export class Home {
     this.studentStore.students().filter(s => s.gender === 'other').length
   );
 
+  // Share-of-total for each gender — an honest "indicator" computed from real data
+  // (no fabricated trends), shown as a small chip on each stat card.
+  malePct = computed(() => this.pct(this.maleCount()));
+  femalePct = computed(() => this.pct(this.femaleCount()));
+  otherPct = computed(() => this.pct(this.otherCount()));
+
+  private pct(n: number): number {
+    const total = this.totalStudents();
+    return total ? Math.round((n / total) * 100) : 0;
+  }
 }
