@@ -22,6 +22,8 @@ export const StudentStore = signalStore(
     page: 1,
     limit: 10,
     total: 0,
+    // Whole-collection counts for the home dashboard (independent of pagination).
+    stats: { total: 0, male: 0, female: 0, other: 0 },
     search: '',
     sortBy: 'createdAt',
     sortOrder: 'asc' as 'asc' | 'desc',
@@ -66,11 +68,23 @@ export const StudentStore = signalStore(
       )
     );
 
+    // Refreshes the whole-collection counts shown on the home dashboard.
+    // Defined here (not just as a returned method) so the mutation methods
+    // below can call it to keep the totals correct after add/edit/delete.
+    const loadStats = () => {
+      studentService.getStats().subscribe({
+        next: (data: any) => patchState(store, { stats: data }),
+        error: (err) => console.log('error loading stats:', err)
+      });
+    };
+
     return {
       loadStudents() {
         if (store.loaded()) return;
         fetch();
       },
+
+      loadStats,
 
       setPage(page: number) {
         patchState(store, { page });
@@ -110,21 +124,21 @@ export const StudentStore = signalStore(
 
       addStudent(data: any) {
         studentService.addStudent(data).subscribe({
-          next: () => fetch(),
+          next: () => { fetch(); loadStats(); },
           error: (err) => console.log('error adding student:', err)
         });
       },
 
       updateStudent(id: string, data: any) {
         studentService.updateStudent(id, data).subscribe({
-          next: () => fetch(),
+          next: () => { fetch(); loadStats(); },
           error: (err) => console.log('error updating student:', err)
         });
       },
 
       deleteStudent(student: any) {
         studentService.deleteStudent(student._id).subscribe({
-          next: () => fetch(),
+          next: () => { fetch(); loadStats(); },
           error: (err) => console.log('error deleting student:', err)
         });
       }

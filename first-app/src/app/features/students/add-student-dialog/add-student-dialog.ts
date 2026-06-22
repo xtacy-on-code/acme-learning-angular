@@ -26,7 +26,7 @@ export class AddStudentDialog {
       email: [this.data?.email || '', [Validators.required, Validators.email]],
       grade: [this.data?.grade || '', Validators.required],
       phone: [this.data?.phone || '', Validators.required],
-      gender: [this.data?.gender || ''],
+      gender: [this.data?.gender || '', Validators.required],
       bloodGroup: [this.data?.bloodGroup || ''],
       section: [this.data?.section || ''],
       dob: [this.data?.dob || ''],

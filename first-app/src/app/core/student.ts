@@ -41,6 +41,10 @@ export class Student {
     });
   }
 
+  getStats() {
+    return this.http.get(`${this.apiURL}/stats`);
+  }
+
   addStudent(data: any) {
     return this.http.post(this.apiURL, data);
   }

@@ -12,22 +12,15 @@ export class Home {
   studentStore = inject(StudentStore);
 
   constructor() {
-    this.studentStore.loadStudents();
+    // Whole-collection counts (computed on the DB) — independent of the paginated
+    // list, so these reflect ALL students, not just the current page.
+    this.studentStore.loadStats();
   }
 
-  totalStudents = computed(() => this.studentStore.students().length);
-
-  maleCount = computed(() =>
-    this.studentStore.students().filter(s => s.gender === 'male').length
-  );
-
-  femaleCount = computed(() =>
-    this.studentStore.students().filter(s => s.gender === 'female').length
-  );
-
-  otherCount = computed(() =>
-    this.studentStore.students().filter(s => s.gender === 'other').length
-  );
+  totalStudents = computed(() => this.studentStore.stats().total);
+  maleCount = computed(() => this.studentStore.stats().male);
+  femaleCount = computed(() => this.studentStore.stats().female);
+  otherCount = computed(() => this.studentStore.stats().other);
 
   // Share-of-total for each gender — an honest "indicator" computed from real data
   // (no fabricated trends), shown as a small chip on each stat card.

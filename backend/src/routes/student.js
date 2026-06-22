@@ -48,6 +48,28 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
+// Whole-collection counts for the dashboard. Computed on the DB (countDocuments
+// + a $group aggregation) so we never ship every document to the client. Defined
+// before the '/:id' routes so 'stats' isn't mistaken for an id.
+router.get('/stats', auth, async (req, res) => {
+    try {
+        const [total, byGender] = await Promise.all([
+            Student.countDocuments({}),
+            Student.aggregate([{ $group: { _id: '$gender', count: { $sum: 1 } } }])
+        ]);
+
+        const counts = { male: 0, female: 0, other: 0 };
+        byGender.forEach((g) => {
+            if (g._id && counts[g._id] !== undefined) counts[g._id] = g.count;
+        });
+
+        // Students with an empty gender count toward `total` but no bucket.
+        res.json({ total, ...counts });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch stats', details: err.message });
+    }
+});
+
 router.post('/', auth, async (req, res) => {
     try {
         const newStudent = await Student.create(req.body);
@@ -59,7 +81,7 @@ router.post('/', auth, async (req, res) => {
 
 router.put('/:id', auth, async (req, res) => {
     try {
-        const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         res.status(200).json({ message: 'Edited successfully!', student: updatedStudent });
     } catch (err) {
         res.status(500).json({ error: 'Failed to update student', details: err.message });
