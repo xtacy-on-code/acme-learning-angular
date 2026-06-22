@@ -2,6 +2,8 @@ const router = require('express').Router();
 const Student = require('../models/Student');
 const auth = require('../middleware/auth');
 
+const { getOrSet, invalidate, invalidatePattern } = require('../utils/cache');
+
 const ALLOWED_SORT_FIELDS = ['name', 'rollno', 'email', 'grade', 'phone', 'gender', 'createdAt'];
 
 router.get('/', auth, async (req, res) => {
@@ -12,6 +14,8 @@ router.get('/', auth, async (req, res) => {
 
         const sortBy = ALLOWED_SORT_FIELDS.includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+        const cacheKey = `students:${page}:${limit}:${search}:${sortBy}:${sortOrder}:${req.query.grade || ''}:${req.query.gender || ''}`;
 
         const query = {};
 
@@ -37,12 +41,17 @@ router.get('/', auth, async (req, res) => {
 
         const skip = (page - 1) * limit;
 
-        const [students, total] = await Promise.all([
-            Student.find(query).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit),
-            Student.countDocuments(query)
-        ]);
+        const result = await getOrSet(cacheKey, async () => {
+            const [students, total] = await Promise.all([
+                Student.find(query).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit),
+                Student.countDocuments(query)
+            ]);
 
-        res.json({ students, total, page, limit, totalPages: Math.ceil(total / limit) });
+            return { students, total, page, limit, totalPages: Math.ceil(total / limit)};
+        });
+
+        res.json(result);
+
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch students', details: err.message });
     }
@@ -53,18 +62,25 @@ router.get('/', auth, async (req, res) => {
 // before the '/:id' routes so 'stats' isn't mistaken for an id.
 router.get('/stats', auth, async (req, res) => {
     try {
-        const [total, byGender] = await Promise.all([
-            Student.countDocuments({}),
-            Student.aggregate([{ $group: { _id: '$gender', count: { $sum: 1 } } }])
-        ]);
+        const stats = await getOrSet(
+            'students:stats', async () => {
+                const [total, byGender] = await Promise.all([
+                    Student.countDocuments({}),
+                    Student.aggregate([{ $group: { _id: '$gender', count: { $sum: 1 } } }])
+                ]);
 
-        const counts = { male: 0, female: 0, other: 0 };
-        byGender.forEach((g) => {
-            if (g._id && counts[g._id] !== undefined) counts[g._id] = g.count;
-        });
+                const counts = { male: 0, female: 0, other: 0 };
+                byGender.forEach((g) => {
+                    if (g._id && counts[g._id] !== undefined) counts[g._id] = g.count;
+                });
 
-        // Students with an empty gender count toward `total` but no bucket.
-        res.json({ total, ...counts });
+                // Students with an empty gender count toward `total` but no bucket.
+                return ({ total, ...counts });
+            }, 120
+        );
+
+        res.json(stats);
+
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch stats', details: err.message });
     }
@@ -73,6 +89,7 @@ router.get('/stats', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
     try {
         const newStudent = await Student.create(req.body);
+        await invalidatePattern('students:*');  // ← bust the cache
         res.status(201).json({ message: 'Created successfully!', student: newStudent });
     } catch (err) {
         res.status(500).json({ error: 'Failed to create student', details: err.message });
@@ -82,6 +99,7 @@ router.post('/', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
     try {
         const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        await invalidatePattern('students:*');  // ← bust the cache
         res.status(200).json({ message: 'Edited successfully!', student: updatedStudent });
     } catch (err) {
         res.status(500).json({ error: 'Failed to update student', details: err.message });
@@ -91,6 +109,7 @@ router.put('/:id', auth, async (req, res) => {
 router.delete('/:id', auth, async (req, res) => {
     try {
         await Student.findByIdAndDelete(req.params.id);
+        await invalidatePattern('students:*');  // ← bust the cache
         res.status(200).json({ message: 'Deleted successfully!' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to delete student', details: err.message });

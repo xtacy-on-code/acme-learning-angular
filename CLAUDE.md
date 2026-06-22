@@ -39,9 +39,11 @@ npx nodemon index.js   # dev with auto-reload (nodemon is a devDependency)
 node index.js          # plain run
 ```
 
-The backend needs `backend/.env` with `MONGODB_URI`, `JWT_SECRET`, and optional `PORT`
-(defaults to 5000). To run the full app locally, start MongoDB, the backend, then the
-frontend — the frontend hardcodes the API at `http://localhost:5000`.
+The backend needs `backend/.env` with `MONGODB_URI`, `JWT_SECRET`, `REDIS_URL` (defaults
+to `redis://localhost:6379` if unset), and optional `PORT` (defaults to 5000). To run the
+full app locally, start MongoDB and Redis, then the backend, then the frontend — the
+frontend hardcodes the API at `http://localhost:5000`. `index.js` awaits `redisClient.connect()`
+before `app.listen`, so the server won't start if Redis is unreachable.
 
 ## Architecture
 
@@ -115,8 +117,10 @@ custom properties + Tailwind v4** — deliberately **not** the Angular Material 
 
 ### Backend (`backend`)
 
-`index.js` boots Express, connects Mongoose to `MONGODB_URI`, serves the `uploads/` folder
-as static files (`app.use('/uploads', express.static(...))`), and mounts three routers:
+`index.js` boots Express, connects Mongoose to `MONGODB_URI`, connects the Redis client
+(`src/config/redis.js`) via `await redisClient.connect()` inside an async `start()` that
+gates `app.listen`, serves the `uploads/` folder as static files
+(`app.use('/uploads', express.static(...))`), and mounts three routers:
 
 - `POST /api/auth/signup`, `POST /api/auth/login` (`src/routes/auth.js`) — bcrypt password
   hashing, JWT (`{ userId }`, 7-day expiry) signed with `JWT_SECRET`.
@@ -126,7 +130,9 @@ as static files (`app.use('/uploads', express.static(...))`), and mounts three r
   across name/email/phone/rollno, exact-match filters for grade/gender (gender lowercased
   to match the schema enum), partial `$regex` filters for rollno/phone/email, and sorting
   restricted to an `ALLOWED_SORT_FIELDS` allowlist. The frontend store's query shape mirrors
-  this contract exactly — keep them in sync when changing either side.
+  this contract exactly — keep them in sync when changing either side. The `GET /` and
+  `GET /stats` responses are **Redis-cached** (see Caching below); the `POST`/`PUT`/`DELETE`
+  handlers each call `invalidatePattern('students:*')` to bust the cache after a mutation.
 - `/api/profile` (`src/routes/profile.js`, `auth`-guarded) — the current user's own profile:
   `GET` returns `User.findById(req.user.userId).select('-password')`; `PUT` updates only a
   whitelist (`name/email/phone/bio/dob/address`, with empty `dob` coerced to `null`) and maps
@@ -138,6 +144,23 @@ as static files (`app.use('/uploads', express.static(...))`), and mounts three r
 an image-only `fileFilter`, and a 2 MB size limit. The DB stores only the URL *path*
 (`/uploads/profile-images/...`), never the bytes; the file is reachable via the static mount
 above. `backend/uploads/` and `.env` are gitignored (`backend/.gitignore`).
+
+**Caching (Redis)** — `src/config/redis.js` exports a single shared `redis` client (`createClient`,
+`REDIS_URL` or `redis://localhost:6379`), connected once at startup. `src/utils/cache.js` wraps it
+in three helpers used by the routes (not the client directly):
+
+- `getOrSet(key, fetchFn, ttl = 60)` — return the cached JSON for `key`, else run `fetchFn()`,
+  `setEx` the result with a TTL (seconds), and return it. On **any** Redis error it logs and falls
+  back to `fetchFn()`, so a Redis outage degrades to direct-DB reads rather than failing the request.
+- `invalidate(key)` — `del` a single key.
+- `invalidatePattern(pattern)` — `keys(pattern)` then `del` the matches (used as `students:*`).
+
+`student.js` is the only consumer so far: `GET /` caches under
+`students:<page>:<limit>:<search>:<sortBy>:<sortOrder>:<grade>:<gender>` (default 60s TTL — the key
+encodes the full query so each filter combo caches separately), and `GET /stats` caches under
+`students:stats` (120s TTL). Every write path busts `students:*`. When adding a cached endpoint,
+fold **all** query params that change the result into the key, and invalidate it from every mutation
+that can stale it.
 
 Models: `src/models/User.js` (`name`, `email` [unique], `password`, plus profile fields
 `profileImage`, `phone`, `bio`, `dob`, `address`), `src/models/Student.js`. Both use

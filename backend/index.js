@@ -8,6 +8,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const redisClient = require('./src/config/redis');
+
 // Serve uploaded files as static URLs. This turns the uploads/ folder on disk
 // into web-reachable URLs, e.g. a file saved at
 //   backend/uploads/profile-images/<userId>.jpg
@@ -27,9 +29,16 @@ app.get('/', (req, res) => {
 
 // server running
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+async function start() {
+    await redisClient.connect();
+
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+start();
+
 
 // auth route
 const authRoutes = require('./src/routes/auth');
