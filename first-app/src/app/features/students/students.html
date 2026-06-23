@@ -7,9 +7,11 @@
       <p class="mt-1 text-sm text-muted">Manage and search your student records.</p>
     </div>
 
-    <button mat-flat-button color="primary" (click)="openAddStudentDialog()">
-      + Add Student
-    </button>
+    @if (canManage()) {
+      <button mat-flat-button color="primary" (click)="openAddStudentDialog()">
+        + Add Student
+      </button>
+    }
   </div>
 
   <!-- Search + Filters -->
@@ -90,6 +92,8 @@
         [loading]="studentStore.loading()"
         [sortBy]="studentStore.sortBy()"
         [sortOrder]="studentStore.sortOrder()"
+        [showEdit]="canManage()"
+        [showDelete]="canManage()"
         (sortChanged)="onColumnSort($event)"
         (editClicked)="editStudent($event)"
         (deleteClicked)="deleteStudent($event)">

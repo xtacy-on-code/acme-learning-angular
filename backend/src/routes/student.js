@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const Student = require('../models/Student');
 const auth = require('../middleware/auth');
+const requireRole = require('../middleware/role');
 
 const { getOrSet, invalidate, invalidatePattern } = require('../utils/cache');
 
@@ -95,7 +96,7 @@ router.get('/stats', auth, async (req, res) => {
     }
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireRole('professor'), async (req, res) => {
     try {
         const newStudent = await Student.create(req.body);
         await invalidatePattern('students:*');  // ← bust the cache
@@ -105,7 +106,7 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireRole('professor'), async (req, res) => {
     try {
         const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         await invalidatePattern('students:*');  // ← bust the cache
@@ -115,7 +116,7 @@ router.put('/:id', auth, async (req, res) => {
     }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireRole('professor'), async (req, res) => {
     try {
         await Student.findByIdAndDelete(req.params.id);
         await invalidatePattern('students:*');  // ← bust the cache

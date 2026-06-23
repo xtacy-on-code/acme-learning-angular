@@ -25,6 +25,17 @@
                class="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary">
       </div>
 
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-text">I am a</label>
+        <mat-radio-group formControlName="role" class="flex gap-4">
+          <mat-radio-button value="student">Student</mat-radio-button>
+          <mat-radio-button value="professor">Professor</mat-radio-button>
+        </mat-radio-group>
+        @if (signupForm.get('role')?.invalid && signupForm.get('role')?.touched) {
+          <span class="text-xs text-red-500">Please choose a role</span>
+        }
+      </div>
+
       <button type="submit"
               class="mt-2 rounded-lg bg-primary py-2.5 text-sm font-medium text-on-primary transition-colors hover:bg-primary-hover">
         Sign up

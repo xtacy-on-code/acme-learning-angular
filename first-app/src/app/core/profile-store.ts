@@ -37,6 +37,13 @@ export const ProfileStore = signalStore(
         });
       },
 
+      // Clear the cached user on logout. Because this is a root singleton, the
+      // previous user's profile would otherwise persist and loadProfile() (a
+      // no-op once `loaded`) would never refetch for the next user who logs in.
+      reset() {
+        patchState(store, { user: null, loaded: false, loading: false, saving: false, uploading: false });
+      },
+
       updateProfile(data: any) {
         patchState(store, { saving: true });
         profileService.updateProfile(data).subscribe({

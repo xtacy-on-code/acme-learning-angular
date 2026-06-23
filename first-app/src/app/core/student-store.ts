@@ -93,6 +93,24 @@ export const StudentStore = signalStore(
 
       loadStats,
 
+      // Reset to initial state on logout so the next user starts with a fresh
+      // list/filters rather than the previous session's cached state (the
+      // `loaded` guard would otherwise keep the stale list).
+      reset() {
+        patchState(store, {
+          students: [],
+          loaded: false,
+          loading: false,
+          page: 1,
+          total: 0,
+          stats: { total: 0, male: 0, female: 0, other: 0, byGrade: [] },
+          search: '',
+          sortBy: 'createdAt',
+          sortOrder: 'asc',
+          filters: { grade: '', gender: '', email: '', phone: '', rollno: '' }
+        });
+      },
+
       setPage(page: number) {
         patchState(store, { page });
         fetch();

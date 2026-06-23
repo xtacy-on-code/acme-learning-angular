@@ -1,0 +1,26 @@
+<div class="flex h-full min-h-0 flex-col gap-5">
+
+  <!-- Page heading -->
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-text">Professors</h1>
+      <p class="mt-1 text-sm text-muted">Manage faculty records. Sort, filter and page directly in the grid.</p>
+    </div>
+
+    <button mat-flat-button color="primary" (click)="openAddProfessorDialog()">
+      + Add Professor
+    </button>
+  </div>
+
+  <!-- Grid (autoHeight: sizes to its rows, so the card grows with content) -->
+  <div class="overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+    <app-ag-data-table
+      [data]="professorStore.professors()"
+      [columns]="columns"
+      [loading]="professorStore.loading()"
+      (editClicked)="editProfessor($event)"
+      (deleteClicked)="deleteProfessor($event)">
+    </app-ag-data-table>
+  </div>
+
+</div>

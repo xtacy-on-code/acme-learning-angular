@@ -5,6 +5,7 @@ import { Students } from './features/students/students';
 import { UserProfile } from './features/profile/profile';
 import { MainLayout } from './layout/main-layout/main-layout';
 import { authGuard } from './core/auth-guard';
+import { roleGuard } from './core/role-guard';
 
 export const routes: Routes = [
     { path: 'signup', component: Signup, title: 'Sign up · Acme' },
@@ -15,6 +16,15 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: 'students', component: Students, title: 'Students · Acme' },
+            // Lazy-loaded so AG Grid ships in the Professors chunk, keeping it out
+            // of the initial bundle (same reasoning as the lazy Home/Chart.js route).
+            {
+                path: 'professors',
+                loadComponent: () => import('./features/professors/professors').then((m) => m.Professors),
+                canActivate: [roleGuard],
+                data: { roles: ['professor'] },
+                title: 'Professors · Acme'
+            },
             // Lazy-loaded so Chart.js ships in the dashboard's own chunk, keeping the
             // initial bundle small (charts aren't needed until /home is visited).
             {

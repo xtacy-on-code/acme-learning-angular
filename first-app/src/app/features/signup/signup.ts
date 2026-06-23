@@ -1,23 +1,25 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule  } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MatRadioModule } from '@angular/material/radio';
 import { Auth } from '../../core/auth';
 
 @Component({
   selector: 'app-signup',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MatRadioModule],
   templateUrl: './signup.html',
   styleUrl: './signup.css',
 })
 
 export class Signup {
-  signupForm: FormGroup; 
+  signupForm: FormGroup;
 
   constructor(private fb: FormBuilder, private router: Router, private auth: Auth) {
     this.signupForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]]
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      role: ['student', Validators.required]
     });
   }
 

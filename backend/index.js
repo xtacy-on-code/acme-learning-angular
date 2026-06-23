@@ -51,3 +51,7 @@ app.use('/api/students', studentRoutes);
 // profile routes (current logged-in user's own profile)
 const profileRoutes = require('./src/routes/profile');
 app.use('/api/profile', profileRoutes);
+
+// professor routes (professor-only CRUD)
+const professorRoutes = require('./src/routes/professor');
+app.use('/api/professors', professorRoutes);

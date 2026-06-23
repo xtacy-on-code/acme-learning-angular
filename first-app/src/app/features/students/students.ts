@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AddStudentDialog } from './add-student-dialog/add-student-dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { DataTable } from "../../shared/data-table/data-table";
 import { StudentStore } from '../../core/student-store';
+import { ProfileStore } from '../../core/profile-store';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator'
 
 
@@ -26,9 +27,15 @@ export class Students{
   ];
 
   studentStore = inject(StudentStore);
+  private profileStore = inject(ProfileStore);
+
+  // Only professors may add/edit/delete; students get a read-only table.
+  // Reads the shared ProfileStore signal (header/sidebar already populate it).
+  canManage = computed(() => this.profileStore.user()?.role === 'professor');
 
   constructor(private dialog: MatDialog) {
     this.studentStore.loadStudents();
+    this.profileStore.loadProfile();
   }
 
   openAddStudentDialog() {

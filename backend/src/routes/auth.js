@@ -7,7 +7,15 @@ const User = require('../models/User');
 // POST route for user signup
 router.post('/signup', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
+
+        // Validate role: only the two known roles are accepted (default 'student'
+        // if omitted, matching the schema default).
+        const allowedRoles = ['student', 'professor'];
+        const userRole = role || 'student';
+        if (!allowedRoles.includes(userRole)) {
+            return res.status(400).json({ error: 'Invalid role' });
+        }
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -19,7 +27,7 @@ router.post('/signup', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // create new user and save
-        const user = new User({ name, email, password: hashedPassword });
+        const user = new User({ name, email, password: hashedPassword, role: userRole });
         await user.save();
 
         res.status(201).json({ message: 'User created successfully' });
@@ -46,13 +54,16 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Invalid email or password' });
         }
 
-        // create JWT token
+        // create JWT token. Embed role so requireRole() can read req.user.role
+        // on every authenticated request without an extra DB lookup.
         const token = jwt.sign(
-            { userId: user._id },
+            { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
-        res.json ({ message: 'Login successful', token });
+        // role is also returned at the top level so the frontend has it
+        // synchronously at login time, before any /api/profile fetch resolves.
+        res.json ({ message: 'Login successful', token, role: user.role });
 
     } catch (err) {
         res.status(500).json({ error: 'Login failed', details: err.message });

@@ -24,6 +24,7 @@ export class Login {
       this.auth.login(this.loginForm.value).subscribe({
         next: (response: any) => {
           localStorage.setItem('token', response.token);
+          localStorage.setItem('role', response.role);
           this.router.navigate(['/students']);
         },
         error: (err) => {
