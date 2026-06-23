@@ -75,7 +75,11 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   attaches it as `Authorization: Bearer <token>` on every request; `core/auth-guard.ts`
   blocks routes when no token is present and redirects to `/login`.
 - **Routing (`app.routes.ts`):** `/login` and `/signup` are public; `students`, `home`, and
-  `profile` nest under `MainLayout` behind `authGuard`. `''` redirects to `login`.
+  `profile` nest under `MainLayout` behind `authGuard`. `''` redirects to `login`. Each route
+  carries a `title` string (e.g. `'Students · Acme'`) — Angular Router's native `TitleStrategy`
+  sets the browser-tab title on every navigation (no `Title` service or custom strategy). This is
+  separate from `header.ts`'s `pageTitle()` signal, which drives the in-page `<h1>`. `index.html`
+  keeps a neutral `<title>Acme</title>` fallback that the Router overrides on navigation.
 - **Layout vs features vs shared:** `layout/` holds chrome (header, footer, sidebar,
   main-layout), `features/` holds routed pages (home, login, signup, students, profile), and
   `shared/data-table` is the reusable table used to render students. The `Header` derives its
@@ -123,6 +127,11 @@ custom properties + Tailwind v4** — deliberately **not** the Angular Material 
   `THEMES` (id/label/bg/accent) drives the **`shared/theme-picker`** swatches in the sidebar.
   `App` injects the service so the theme applies app-wide (incl. login/signup); `index.html` has a
   tiny inline script that sets `data-theme` before first paint to avoid a flash — **leave it.**
+- **Favicon:** `public/favicon.svg` is a hand-written SVG (rounded square, bold white "A") mirroring
+  the sidebar brand mark, referenced from `index.html` as `<link rel="icon" type="image/svg+xml">`.
+  It uses a **fixed** hex (`#4f46e5`, the default theme primary) — favicons render outside the page
+  and can't react to `data-theme`, so it intentionally doesn't track the active theme. The old
+  `favicon.ico` was deleted; `public/` holds only the SVG.
 - **Styling rules:** never hardcode hex in templates/component CSS — use the semantic Tailwind
   classes or `var(--c-*)`. Keep the `--c-*` names and the `@theme inline` structure stable; add a
   new token in all five `[data-theme]` blocks + the `@theme inline` map together. The look targets
