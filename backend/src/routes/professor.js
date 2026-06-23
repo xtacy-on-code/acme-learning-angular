@@ -5,10 +5,9 @@ const requireRole = require('../middleware/role');
 
 const { getOrSet, invalidatePattern } = require('../utils/cache');
 
-// The whole Professors API is professor-only — students can't reach it even by
-// bypassing the UI. auth sets req.user from the JWT; requireRole gates on role.
+// Any authenticated user can READ professors; only professors may mutate them.
+// auth sets req.user from the JWT; requireRole('professor') gates the writes.
 router.use(auth);
-router.use(requireRole('professor'));
 
 // Return the full list — the frontend AG Grid does sorting/filtering/pagination
 // client-side, so no query params are needed. Cached under a single key.
@@ -25,7 +24,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireRole('professor'), async (req, res) => {
     try {
         const newProfessor = await Professor.create(req.body);
         await invalidatePattern('professors:*');  // ← bust the cache
@@ -35,7 +34,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireRole('professor'), async (req, res) => {
     try {
         const updatedProfessor = await Professor.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         await invalidatePattern('professors:*');  // ← bust the cache
@@ -45,7 +44,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireRole('professor'), async (req, res) => {
     try {
         await Professor.findByIdAndDelete(req.params.id);
         await invalidatePattern('professors:*');  // ← bust the cache

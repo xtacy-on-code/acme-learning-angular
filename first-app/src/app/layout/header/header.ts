@@ -43,6 +43,10 @@ export class Header {
 
   readonly userName = computed(() => this.store.user()?.name ?? '');
 
+  // The logged-in user's role, shown as a badge in the header so it's always
+  // clear whether you're acting as a professor or a student.
+  readonly role = computed(() => this.store.user()?.role ?? '');
+
   // Same URL + cache-bust logic the profile page uses. Because we read the
   // shared signal, uploading a new photo on the profile page updates this
   // avatar automatically — no extra wiring needed.

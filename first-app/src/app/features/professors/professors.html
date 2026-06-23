@@ -7,9 +7,11 @@
       <p class="mt-1 text-sm text-muted">Manage faculty records. Sort, filter and page directly in the grid.</p>
     </div>
 
-    <button mat-flat-button color="primary" (click)="openAddProfessorDialog()">
-      + Add Professor
-    </button>
+    @if (canManage()) {
+      <button mat-flat-button color="primary" (click)="openAddProfessorDialog()">
+        + Add Professor
+      </button>
+    }
   </div>
 
   <!-- Grid (autoHeight: sizes to its rows, so the card grows with content) -->
@@ -18,6 +20,8 @@
       [data]="professorStore.professors()"
       [columns]="columns"
       [loading]="professorStore.loading()"
+      [showEdit]="canManage()"
+      [showDelete]="canManage()"
       (editClicked)="editProfessor($event)"
       (deleteClicked)="deleteProfessor($event)">
     </app-ag-data-table>

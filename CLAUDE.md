@@ -88,16 +88,17 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   under `role`** (returned top-level by `/api/auth/login`, not just embedded in the JWT, so the
   frontend has it synchronously at login). `core/auth-interceptor.ts` attaches the token as
   `Authorization: Bearer <token>` on every request; `core/auth-guard.ts` blocks routes when no
-  token is present and redirects to `/login`. **`core/role-guard.ts`** is a second `CanActivateFn`
-  that reads `route.data['roles']` (e.g. `['professor']`) against `localStorage` `role`, redirecting
-  to `/students` on mismatch. Two role sources coexist by design: the **JWT role** (enforced by the
-  backend), the **`localStorage` role** (used by `roleGuard`), and the **`ProfileStore.user().role`**
-  from `/api/profile` (used for reactive UI like the sidebar link). All are set/refreshed at login —
-  tokens issued before roles existed lack one, so those users must re-login.
+  token is present and redirects to `/login`. Roles aren't gated at the route level — access is
+  enforced in-component (UI) and by the backend (`requireRole`). Two role sources coexist by design:
+  the **JWT role** (enforced by the backend) and the **`ProfileStore.user().role`** from
+  `/api/profile` (drives reactive UI like the role badge and the read-only toggles); a copy is also
+  kept in `localStorage` under `role`. All are set/refreshed at login — tokens issued before roles
+  existed lack one, so those users must re-login.
 - **Routing (`app.routes.ts`):** `/login` and `/signup` are public; `students`, `home`,
   `professors`, and `profile` nest under `MainLayout` behind `authGuard`. `''` redirects to `login`.
-  `professors` additionally has `canActivate: [roleGuard], data: { roles: ['professor'] }` and is
-  **lazy-loaded** (`loadComponent`) so AG Grid ships in its own chunk (see below). Each route
+  `professors` is **lazy-loaded** (`loadComponent`) so AG Grid ships in its own chunk (see below);
+  it's open to any logged-in user (read-only for students) — role isn't gated at the route level,
+  only in-component. Each route
   carries a `title` string (e.g. `'Students · Acme'`) — Angular Router's native `TitleStrategy`
   sets the browser-tab title on every navigation (no `Title` service or custom strategy). This is
   separate from `header.ts`'s `pageTitle()` signal, which drives the in-page `<h1>`. `index.html`
@@ -127,13 +128,15 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   routed page component is therefore `UserProfile` (`features/profile/profile.ts`, selector
   `app-profile`) to avoid colliding with it — same way the service is `Student` and the
   page is `Students` (and the service is `Professor`, the page `Professors`).
-- **Role-gated UI (no new UX, just show/hide):** `Sidebar` shows the **Professors** nav link
-  only when `ProfileStore.user()?.role === 'professor'`. `Students` exposes a
-  `canManage = computed(() => profileStore.user()?.role === 'professor')` and binds it to the
-  DataTable's `[showEdit]`/`[showDelete]` and the "+ Add Student" button — so a student-role user
-  sees a read-only table (the `actions` column only renders when `showEdit || showDelete`). This
-  is **UI convenience only**; the backend independently enforces the same rules (a student hitting
-  the write APIs directly gets 403), so never rely on the hidden controls for security.
+- **Role-gated UI (no new UX, just show/hide):** the **Professors** nav link shows for every
+  logged-in user (students can view the list). Both `Students` and `Professors` expose a
+  `canManage = computed(() => profileStore.user()?.role === 'professor')` bound to their table's
+  `[showEdit]`/`[showDelete]` and the "+ Add …" button — so a student sees a **read-only** table
+  (the `actions` column only renders when `showEdit || showDelete`). The header shows the current
+  user's `role` as a small badge under the name (`header.ts`'s `role` computed) so it's always
+  clear who you're acting as. All of this is **UI convenience only**; the backend independently
+  enforces the rules (a student hitting any write API — students or professors — gets 403), so
+  never rely on the hidden controls for security.
 - **`shared/ag-data-table` (AG Grid wrapper) & the Professors feature:** `AgDataTable`
   (`shared/ag-data-table/ag-data-table.ts`, selector `app-ag-data-table`) is a reusable wrapper over
   **AG Grid** (`ag-grid-community` + `ag-grid-angular`, v35) used by the Professors page instead of
@@ -224,10 +227,11 @@ gates `app.listen`, serves the `uploads/` folder as static files
   whitelist (`name/email/phone/bio/dob/address`, with empty `dob` coerced to `null`) and maps
   a duplicate-email index error to `400`; `POST /image` runs the multer upload middleware and
   stores the resulting path on `profileImage`.
-- `/api/professors` CRUD (`src/routes/professor.js`) — the **whole router** is guarded
-  `router.use(auth); router.use(requireRole('professor'))`, so students can't reach it at all
-  (even read), not just the writes. `GET /` returns the **full list** (no query params — the AG
-  Grid sorts/filters/pages client-side), Redis-cached under the single key `professors:all`; the
+- `/api/professors` CRUD (`src/routes/professor.js`) — `router.use(auth)` guards the whole router,
+  so **any authenticated user can read** (`GET /`); `POST`/`PUT`/`DELETE` each add
+  `requireRole('professor')`, so only professors mutate (same read-for-all / write-for-professor
+  shape as `/api/students`). `GET /` returns the **full list** (no query params — the AG Grid
+  sorts/filters/pages client-side), Redis-cached under the single key `professors:all`; the
   mutations bust `professors:*`. Register it in `index.js` (`app.use('/api/professors', …)`) —
   easy to forget. Seed sample faculty with `node seed-professors.js` (idempotent: wipes + reinserts
   8 professors, then clears the `professors:*` cache).
