@@ -20,10 +20,11 @@
       [data]="professorStore.professors()"
       [columns]="columns"
       [loading]="professorStore.loading()"
-      [showEdit]="canManage()"
+      [showEdit]="false"
       [showDelete]="canManage()"
-      (editClicked)="editProfessor($event)"
-      (deleteClicked)="deleteProfessor($event)">
+      [editable]="canManage()"
+      (deleteClicked)="deleteProfessor($event)"
+      (cellEdited)="onCellEdited($event)">
     </app-ag-data-table>
   </div>
 

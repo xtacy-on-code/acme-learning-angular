@@ -1,10 +1,13 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, viewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { AgDataTable } from '../../shared/ag-data-table/ag-data-table';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AgDataTable, DataTableColumn } from '../../shared/ag-data-table/ag-data-table';
 import { ProfessorStore } from '../../core/professor-store';
 import { ProfileStore } from '../../core/profile-store';
 import { AddProfessorDialog } from './add-professor-dialog/add-professor-dialog';
+
+const DESIGNATIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer'];
 
 @Component({
   selector: 'app-professors',
@@ -13,19 +16,27 @@ import { AddProfessorDialog } from './add-professor-dialog/add-professor-dialog'
   styleUrl: './professors.css',
 })
 export class Professors {
-  columns = [
-    { key: 'name', label: 'Name', sortable: true },
-    { key: 'employeeId', label: 'Employee ID', sortable: true },
-    { key: 'department', label: 'Department', sortable: true },
-    { key: 'designation', label: 'Designation', sortable: true },
-    { key: 'specialization', label: 'Specialization', sortable: true },
-    { key: 'experience', label: 'Experience (yrs)', sortable: true },
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'phone', label: 'Phone', sortable: true },
+  // Every visible column is inline-editable: text, number (experience), or
+  // select (designation/gender). Note employeeId has a unique index — editing it
+  // to a value that already exists fails server-side and the cell reverts.
+  columns: DataTableColumn[] = [
+    { key: 'name', label: 'Name', sortable: true, editable: true, editorType: 'text' },
+    { key: 'employeeId', label: 'Employee ID', sortable: true, editable: true, editorType: 'text' },
+    { key: 'department', label: 'Department', sortable: true, editable: true, editorType: 'text' },
+    { key: 'designation', label: 'Designation', sortable: true, editable: true, editorType: 'select', editorParams: { values: DESIGNATIONS } },
+    { key: 'specialization', label: 'Specialization', sortable: true, editable: true, editorType: 'text' },
+    { key: 'experience', label: 'Experience (yrs)', sortable: true, editable: true, editorType: 'number' },
+    { key: 'gender', label: 'Gender', sortable: true, editable: true, editorType: 'select', editorParams: { values: ['male', 'female', 'other'] } },
+    { key: 'email', label: 'Email', sortable: true, editable: true, editorType: 'text' },
+    { key: 'phone', label: 'Phone', sortable: true, editable: true, editorType: 'text' },
   ];
+
+  // Reference to the grid wrapper so we can revert a cell on a failed save.
+  private agGrid = viewChild(AgDataTable);
 
   professorStore = inject(ProfessorStore);
   private profileStore = inject(ProfileStore);
+  private snackBar = inject(MatSnackBar);
 
   // Students can view professors but not mutate them; only professors get the
   // add/edit/delete controls. Backend enforces the same (403 on writes).
@@ -45,16 +56,20 @@ export class Professors {
     });
   }
 
-  editProfessor(professor: any) {
-    const dialogRef = this.dialog.open(AddProfessorDialog, { data: professor });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.professorStore.updateProfessor(professor._id, result);
-      }
-    });
-  }
-
   deleteProfessor(professor: any) {
     this.professorStore.deleteProfessor(professor);
+  }
+
+  // One committed cell edit → one PATCH-style request. Optimistic: AG Grid
+  // already shows the new value; on failure we roll the cell back and toast.
+  onCellEdited(e: { id: string; field: string; oldValue: any; newValue: any }) {
+    this.professorStore.updateField(e.id, e.field, e.newValue).subscribe({
+      next: () => this.snackBar.open('Saved', '', { duration: 1500 }),
+      error: (err) => {
+        this.agGrid()?.revertCell(e.id, e.field, e.oldValue);
+        const msg = err?.error?.details || err?.error?.error || 'Update failed';
+        this.snackBar.open(msg, 'Dismiss', { duration: 4000 });
+      },
+    });
   }
 }

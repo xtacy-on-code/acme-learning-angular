@@ -130,32 +130,51 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   page is `Students` (and the service is `Professor`, the page `Professors`).
 - **Role-gated UI (no new UX, just show/hide):** the **Professors** nav link shows for every
   logged-in user (students can view the list). Both `Students` and `Professors` expose a
-  `canManage = computed(() => profileStore.user()?.role === 'professor')` bound to their table's
-  `[showEdit]`/`[showDelete]` and the "+ Add …" button — so a student sees a **read-only** table
-  (the `actions` column only renders when `showEdit || showDelete`). The header shows the current
-  user's `role` as a small badge under the name (`header.ts`'s `role` computed) so it's always
-  clear who you're acting as. All of this is **UI convenience only**; the backend independently
-  enforces the rules (a student hitting any write API — students or professors — gets 403), so
-  never rely on the hidden controls for security.
+  `canManage = computed(() => profileStore.user()?.role === 'professor')` that gates their write
+  controls and the "+ Add …" button — so a student sees a **read-only** table. The two pages differ
+  in *how* they edit: `Students` binds `canManage` to the Material DataTable's `[showEdit]`/
+  `[showDelete]` (dialog-based edit/delete; the `actions` column only renders when
+  `showEdit || showDelete`); `Professors` has **no edit button** (`showEdit` is `false`) — editing is
+  inline in the grid, gated by `[editable]="canManage()"` — and keeps only Delete (`[showDelete]`).
+  The header shows the current user's `role` as a small badge under the name (`header.ts`'s `role`
+  computed) so it's always clear who you're acting as. All of this is **UI convenience only**; the
+  backend independently enforces the rules (a student hitting any write API — students or professors
+  — gets 403), so never rely on the hidden controls for security.
 - **`shared/ag-data-table` (AG Grid wrapper) & the Professors feature:** `AgDataTable`
   (`shared/ag-data-table/ag-data-table.ts`, selector `app-ag-data-table`) is a reusable wrapper over
   **AG Grid** (`ag-grid-community` + `ag-grid-angular`, v35) used by the Professors page instead of
   the Material `DataTable` — a deliberate second-library showcase. It mirrors DataTable's API
   (`columns: DataTableColumn[]`, `data`, `loading`, `showEdit`/`showDelete` inputs; `editClicked`/
-  `deleteClicked` outputs) so callers swap with minimal change. Notable bits, **all easy to get
-  wrong**: (1) `ModuleRegistry.registerModules([AllCommunityModule])` is a **module-level side
-  effect at the top of `ag-data-table.ts`** (not `main.ts`) so AG Grid lands in the lazy Professors
-  chunk, not the initial bundle — same reasoning as lazy-loading Home for Chart.js. (2) Theming uses
-  the modern **Theming API** (`themeQuartz.withParams({...})` from `ag-grid-community`, **not** the
-  legacy CSS theme files), with color params set to `var(--c-*)` strings (`backgroundColor`,
-  `foregroundColor`, `headerBackgroundColor`, `borderColor`, `rowHoverColor`, `accentColor`, …) — so
-  the grid recolors on a `data-theme` flip with **zero JS**, the same way the `--mat-sys-*` remap
-  themes Material. (3) The grid uses **`domLayout="autoHeight"`** — AG Grid otherwise needs an
-  explicit pixel height and renders **blank** in a flex/`h-full` parent whose height doesn't resolve;
-  autoHeight sizes it to its rows instead. (4) The actions column is a custom cell renderer
-  (`actions-cell.ts`, `ICellRendererAngularComp`) that calls back via
+  `deleteClicked` outputs) so callers swap with minimal change, plus inline-edit extras (below).
+  Notable bits, **all easy to get wrong**: (1) `ModuleRegistry.registerModules([AllCommunityModule])`
+  is a **module-level side effect at the top of `ag-data-table.ts`** (not `main.ts`) so AG Grid lands
+  in the lazy Professors chunk, not the initial bundle — same reasoning as lazy-loading Home for
+  Chart.js. (2) Theming uses the modern **Theming API** (`themeQuartz.withParams({...})` from
+  `ag-grid-community`, **not** the legacy CSS theme files), with color params set to `var(--c-*)`
+  strings (`backgroundColor`, `foregroundColor`, `headerBackgroundColor`, `borderColor`,
+  `rowHoverColor`, `accentColor`, …) — so the grid recolors on a `data-theme` flip with **zero JS**,
+  the same way the `--mat-sys-*` remap themes Material. (3) The grid uses **`domLayout="autoHeight"`**
+  — AG Grid otherwise needs an explicit pixel height and renders **blank** in a flex/`h-full` parent
+  whose height doesn't resolve; autoHeight sizes it to its rows instead. (4) The actions column is a
+  custom cell renderer (`actions-cell.ts`, `ICellRendererAngularComp`) that calls back via
   `params.context.componentParent.onEdit/onDelete`, which re-emit the wrapper's outputs. Sorting and
   pagination are AG Grid's built-in client-side features (`pagination`, `paginationPageSize`).
+- **Inline cell editing (Professors).** `DataTableColumn` carries optional `editable` /
+  `editorType: 'text'|'number'|'select'` / `editorParams: { values }`, mapped to AG Grid's `editable`
+  + built-in editors (text default, `agNumberCellEditor`, `agSelectCellEditor`). A master
+  `editable` input gates all of it (bound to `canManage()` so students stay read-only). Double-click
+  to edit (default — **don't** set `singleClickEdit`); committing fires `(cellValueChanged)` →
+  the wrapper's **`cellEdited`** output `{ id, field, oldValue, newValue }` (skipped when unchanged).
+  `[getRowId]` is keyed on `_id` (not row index) — **required** so `revertCell(rowId, field, oldValue)`
+  (which calls `gridApi.getRowNode(rowId).setDataValue(...)`) can find the node. The Professors page
+  handles `cellEdited` → `ProfessorStore.updateField(id, field, newValue)` (sends **only that field**;
+  the backend `PUT /:id` does a partial `findByIdAndUpdate` with `runValidators`, leaving other fields
+  intact). It's **optimistic**: on success a brief `MatSnackBar` "Saved" + an in-place row patch (no
+  refetch); on failure `revertCell(...)` rolls the cell back and an error snackbar shows the server's
+  `err.error.details`. Every column is editable; `employeeId` has a unique index, so editing it to a
+  duplicate fails server-side and reverts. There is **no dialog-based edit button** on Professors
+  (inline editing replaces it) — only Add + Delete; `showEdit` is `false`. (Students' Material table
+  still uses the dialog edit via `DataTable`.)
 
 ### Theming & UI (design system)
 

@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
+import { tap } from 'rxjs';
 import { Professor } from './professor';
 
 // Same @ngrx/signals shape as StudentStore, but simpler: there's no live search,
@@ -55,6 +56,22 @@ export const ProfessorStore = signalStore(
           next: () => fetch(),
           error: (err) => console.log('error updating professor:', err),
         });
+      },
+
+      // Inline single-field update (one cell commit). Returns the Observable so
+      // the caller can show a "Saved"/error toast and revert the grid on failure.
+      // On success we patch just that row in place (no full refetch); on error we
+      // patch nothing, leaving the caller to roll the cell back to its old value.
+      updateField(id: string, field: string, newValue: any) {
+        return service.updateProfessor(id, { [field]: newValue }).pipe(
+          tap(() =>
+            patchState(store, {
+              professors: store
+                .professors()
+                .map((p) => (p._id === id ? { ...p, [field]: newValue } : p)),
+            })
+          )
+        );
       },
 
       deleteProfessor(professor: any) {
