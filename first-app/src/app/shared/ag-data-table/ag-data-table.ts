@@ -8,6 +8,7 @@ import {
   GridApi,
   GridReadyEvent,
   ModuleRegistry,
+  RowSelectionOptions,
   themeQuartz,
 } from 'ag-grid-community';
 import { ActionsCellComponent } from './actions-cell';
@@ -65,7 +66,9 @@ export const acmeGridTheme = themeQuartz.withParams({
       [paginationPageSize]="10"
       [paginationPageSizeSelector]="[10, 20, 50]"
       [animateRows]="true"
+      [rowSelection]="rowSelection()"
       (gridReady)="onGridReady($event)"
+      (selectionChanged)="onSelectionChanged()"
       (cellValueChanged)="onCellValueChanged($event)">
     </ag-grid-angular>
   `,
@@ -83,11 +86,24 @@ export class AgDataTable {
   // only editable when this is true (the Professors page binds it to canManage,
   // so students get a read-only grid).
   readonly editable = input<boolean>(true);
+  // When true, a leading checkbox column lets the user multi-select rows.
+  readonly selectable = input<boolean>(false);
 
   readonly editClicked = output<any>();
   readonly deleteClicked = output<any>();
   // Emitted once per committed cell edit (blur/Enter) with a real value change.
   readonly cellEdited = output<{ id: string; field: string; oldValue: any; newValue: any }>();
+  // Emits the current selection (the actual row objects) whenever it changes.
+  readonly selectionChanged = output<any[]>();
+
+  // AG Grid's modern row-selection config: multi-row with checkboxes + a
+  // header "select all" box. Clicking a row doesn't select (so double-click cell
+  // editing still works) — only the checkbox toggles. Undefined disables selection.
+  readonly rowSelection = computed<RowSelectionOptions | undefined>(() =>
+    this.selectable()
+      ? { mode: 'multiRow', checkboxes: true, headerCheckbox: true, enableClickSelection: false }
+      : undefined
+  );
 
   readonly theme = acmeGridTheme;
 
@@ -157,6 +173,10 @@ export class AgDataTable {
 
   onGridReady(event: GridReadyEvent) {
     this.gridApi = event.api;
+  }
+
+  onSelectionChanged() {
+    this.selectionChanged.emit(this.gridApi?.getSelectedRows() ?? []);
   }
 
   onCellValueChanged(event: CellValueChangedEvent) {

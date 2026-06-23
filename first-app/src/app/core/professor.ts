@@ -26,4 +26,8 @@ export class Professor {
   deleteProfessor(id: string) {
     return this.http.delete(`${this.apiURL}/${id}`);
   }
+
+  bulkDeleteProfessors(ids: string[]) {
+    return this.http.post(`${this.apiURL}/bulk-delete`, { ids });
+  }
 }

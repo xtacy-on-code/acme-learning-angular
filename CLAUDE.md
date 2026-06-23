@@ -175,6 +175,18 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   duplicate fails server-side and reverts. There is **no dialog-based edit button** on Professors
   (inline editing replaces it) — only Add + Delete; `showEdit` is `false`. (Students' Material table
   still uses the dialog edit via `DataTable`.)
+- **Multi-select + bulk delete (both tables).** Both tables take a `selectable` input (bound to
+  `canManage()`) and emit `selectionChanged` with the selected row objects. `DataTable` (Material)
+  renders a leading checkbox column via CDK `SelectionModel` + `MatCheckbox` (header select-all +
+  per-row) and **clears the selection in `ngOnChanges` whenever `data` changes** — important because
+  Students is server-paginated, so a page change/reload/delete replaces the array and a stale
+  selection would reference unseen rows (select-all = current page only). `AgDataTable` uses AG Grid's
+  modern `rowSelection = { mode: 'multiRow', checkboxes: true, headerCheckbox: true,
+  enableClickSelection: false }` (click-to-select off so double-click cell editing still works);
+  since the grid is client-side, its selection persists across grid pages. Each page keeps the
+  selected rows, shows a "N selected → Delete selected" toolbar (professor-only, with a `confirm()`),
+  and calls the store's `bulkDelete*` → service `POST /bulk-delete { ids }`. After the delete the
+  store refetches and the table's data-change clears the selection.
 
 ### Theming & UI (design system)
 
@@ -229,7 +241,9 @@ gates `app.listen`, serves the `uploads/` folder as static files
   which verifies the Bearer token and sets `req.user` (`= { userId, role }`). `GET /` and
   `GET /stats` are open to any authenticated role; **`POST`/`PUT`/`DELETE` add
   `requireRole('professor')`** (students get read-only access). The `GET` handler does
-  server-side pagination (`page`/`limit`, capped at 100), case-insensitive `$regex` search
+  server-side pagination (`page`/`limit`, capped at 100), plus a `POST /bulk-delete { ids }`
+  (`deleteMany`, professor-only) for multi-select deletes. The `GET` does
+  case-insensitive `$regex` search
   across name/email/phone/rollno, exact-match filters for grade/gender (gender lowercased
   to match the schema enum), partial `$regex` filters for rollno/phone/email, and sorting
   restricted to an `ALLOWED_SORT_FIELDS` allowlist. The frontend store's query shape mirrors
@@ -251,9 +265,12 @@ gates `app.listen`, serves the `uploads/` folder as static files
   `requireRole('professor')`, so only professors mutate (same read-for-all / write-for-professor
   shape as `/api/students`). `GET /` returns the **full list** (no query params — the AG Grid
   sorts/filters/pages client-side), Redis-cached under the single key `professors:all`; the
-  mutations bust `professors:*`. Register it in `index.js` (`app.use('/api/professors', …)`) —
-  easy to forget. Seed sample faculty with `node seed-professors.js` (idempotent: wipes + reinserts
-  8 professors, then clears the `professors:*` cache).
+  mutations (incl. `POST /bulk-delete { ids }` for multi-select) bust `professors:*`. Register it in
+  `index.js` (`app.use('/api/professors', …)`) — easy to forget.
+- **Seed scripts (one-off, idempotent — each wipes its collection then re-inserts, and clears the
+  matching cache):** `node seed-professors.js` (8 named + ~32 generated = 40 professors) and
+  `node seed-students.js` (~60 students). Run them for enough rows to exercise pagination /
+  multi-select / bulk delete. Students & professors are **global** collections (not per-user).
 
 **Image uploads** use `src/middleware/upload.js` — multer `diskStorage` writing to
 `backend/uploads/profile-images/<userId><ext>` (one file per user, overwritten on re-upload),
@@ -295,3 +312,9 @@ frontend with `?t=<updatedAt>` since the filename is stable per user.
   `text-text`, `text-muted`, `border-border`, `bg-primary`, `text-on-primary`, …) — no hardcoded
   hex in templates or component CSS (component CSS may use `var(--c-*)`). See "Theming & UI".
 - Tests are Vitest `.spec.ts` files colocated with their component/service.
+- **Form validation** uses reactive-forms validators with inline `mat-error`s. Note the profile
+  form (`features/profile/profile.ts`) deliberately uses a **custom email pattern** (not
+  `Validators.email`, which accepts `a@b`), a phone pattern (optional `+`, 10–15 digits), and a
+  custom `dobValidator` (real date, not future, after 1900) paired with datepicker `[min]`/`[max]`.
+  Reuse this shape (pattern/custom validator + `mat-error`) rather than the looser built-ins when a
+  field needs real validation.

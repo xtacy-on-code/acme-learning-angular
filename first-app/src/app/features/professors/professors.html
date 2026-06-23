@@ -7,11 +7,23 @@
       <p class="mt-1 text-sm text-muted">Manage faculty records. Sort, filter and page directly in the grid.</p>
     </div>
 
-    @if (canManage()) {
-      <button mat-flat-button color="primary" (click)="openAddProfessorDialog()">
-        + Add Professor
-      </button>
-    }
+    <div class="flex items-center gap-3">
+      @if (canManage() && selectedProfessors.length) {
+        <span class="text-sm text-muted">
+          <span class="font-semibold text-text">{{ selectedProfessors.length }}</span> selected
+        </span>
+        <button
+          (click)="bulkDeleteSelected()"
+          class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700">
+          Delete selected
+        </button>
+      }
+      @if (canManage()) {
+        <button mat-flat-button color="primary" (click)="openAddProfessorDialog()">
+          + Add Professor
+        </button>
+      }
+    </div>
   </div>
 
   <!-- Grid (autoHeight: sizes to its rows, so the card grows with content) -->
@@ -23,8 +35,10 @@
       [showEdit]="false"
       [showDelete]="canManage()"
       [editable]="canManage()"
+      [selectable]="canManage()"
       (deleteClicked)="deleteProfessor($event)"
-      (cellEdited)="onCellEdited($event)">
+      (cellEdited)="onCellEdited($event)"
+      (selectionChanged)="onSelectionChanged($event)">
     </app-ag-data-table>
   </div>
 

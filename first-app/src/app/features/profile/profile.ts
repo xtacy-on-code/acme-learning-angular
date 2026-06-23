@@ -1,10 +1,37 @@
 import { Component, computed, effect, inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
 import { ProfileStore } from '../../core/profile-store';
+
+// A real email: non-empty local part, single @, a dotted domain with a 2+ char
+// TLD. Stricter than Validators.email (which accepts e.g. "a@b").
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// Phone: optional leading +, then 10–15 digits (covers local + country-code).
+const PHONE_RE = /^\+?\d{10,15}$/;
+
+// DOB must be a real date that's in the past and not absurdly old. Empty is
+// allowed (the field is optional). Material's datepicker yields a Date.
+function dobValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) return { invalidDate: true };
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (date > today) return { futureDate: true };
+  if (date < new Date(1900, 0, 1)) return { tooOld: true };
+  return null;
+}
 
 // Class is `UserProfile` (not `Profile`) because the HTTP service in
 // core/profile.ts is already called `Profile` — same way the service is
@@ -30,15 +57,19 @@ export class UserProfile {
 
   profileForm: FormGroup;
 
+  // Bounds for the datepicker calendar (typed input is also caught by dobValidator).
+  readonly today = new Date();
+  readonly minDob = new Date(1900, 0, 1);
+
   constructor(private fb: FormBuilder) {
     this.store.loadProfile();
 
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phone: [''],
+      email: ['', [Validators.required, Validators.pattern(EMAIL_RE)]],
+      phone: ['', Validators.pattern(PHONE_RE)],
       bio: [''],
-      dob: [''],
+      dob: ['', dobValidator],
       address: [''],
     });
 

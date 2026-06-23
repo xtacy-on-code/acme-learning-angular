@@ -80,6 +80,13 @@ export const ProfessorStore = signalStore(
           error: (err) => console.log('error deleting professor:', err),
         });
       },
+
+      bulkDeleteProfessors(ids: string[]) {
+        service.bulkDeleteProfessors(ids).subscribe({
+          next: () => fetch(),
+          error: (err) => console.log('error bulk-deleting professors:', err),
+        });
+      },
     };
   })
 );

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(netstat -ano)",
       "Bash(tasklist)",
-      "Bash(taskkill //PID 5440 //F)"
+      "Bash(taskkill //PID 5440 //F)",
+      "Bash(timeout 40 node seed-students.js)",
+      "Bash(timeout 40 node seed-professors.js)"
     ]
   }
 }

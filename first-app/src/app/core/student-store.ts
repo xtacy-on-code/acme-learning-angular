@@ -166,6 +166,13 @@ export const StudentStore = signalStore(
           next: () => { fetch(); loadStats(); },
           error: (err) => console.log('error deleting student:', err)
         });
+      },
+
+      bulkDeleteStudents(ids: string[]) {
+        studentService.bulkDeleteStudents(ids).subscribe({
+          next: () => { fetch(); loadStats(); },
+          error: (err) => console.log('error bulk-deleting students:', err)
+        });
       }
     };
   })

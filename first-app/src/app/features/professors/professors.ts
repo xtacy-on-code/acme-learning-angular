@@ -60,6 +60,21 @@ export class Professors {
     this.professorStore.deleteProfessor(professor);
   }
 
+  // --- Multi-select bulk delete ---
+  selectedProfessors: any[] = [];
+
+  onSelectionChanged(rows: any[]) {
+    this.selectedProfessors = rows;
+  }
+
+  bulkDeleteSelected() {
+    const ids = this.selectedProfessors.map((p) => p._id);
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} selected professor(s)? This cannot be undone.`)) return;
+    this.professorStore.bulkDeleteProfessors(ids);
+    this.selectedProfessors = [];
+  }
+
   // One committed cell edit → one PATCH-style request. Optimistic: AG Grid
   // already shows the new value; on failure we roll the cell back and toast.
   onCellEdited(e: { id: string; field: string; oldValue: any; newValue: any }) {

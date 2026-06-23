@@ -42,18 +42,33 @@
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="email">
+          @if (profileForm.get('email')?.hasError('required')) {
+            <mat-error>Email is required</mat-error>
+          } @else if (profileForm.get('email')?.hasError('pattern')) {
+            <mat-error>Enter a valid email address</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Phone</mat-label>
           <input matInput type="tel" formControlName="phone">
+          @if (profileForm.get('phone')?.hasError('pattern')) {
+            <mat-error>Enter a valid phone number (10–15 digits)</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Date of Birth</mat-label>
-          <input matInput [matDatepicker]="picker" formControlName="dob">
+          <input matInput [matDatepicker]="picker" [min]="minDob" [max]="today" formControlName="dob">
           <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
+          @if (profileForm.get('dob')?.hasError('futureDate')) {
+            <mat-error>Date of birth can't be in the future</mat-error>
+          } @else if (profileForm.get('dob')?.hasError('tooOld')) {
+            <mat-error>Enter a date after 1900</mat-error>
+          } @else if (profileForm.get('dob')?.hasError('invalidDate') || profileForm.get('dob')?.hasError('matDatepickerParse')) {
+            <mat-error>Enter a valid date</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="col-span-2">

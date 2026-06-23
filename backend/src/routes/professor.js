@@ -54,4 +54,17 @@ router.delete('/:id', requireRole('professor'), async (req, res) => {
     }
 });
 
+// Bulk delete (multi-select). Distinct path from DELETE /:id, so no conflict.
+router.post('/bulk-delete', requireRole('professor'), async (req, res) => {
+    try {
+        const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+        if (!ids.length) return res.status(400).json({ error: 'No ids provided' });
+        const result = await Professor.deleteMany({ _id: { $in: ids } });
+        await invalidatePattern('professors:*');  // ← bust the cache
+        res.status(200).json({ message: 'Deleted successfully!', deletedCount: result.deletedCount });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete professors', details: err.message });
+    }
+});
+
 module.exports = router;

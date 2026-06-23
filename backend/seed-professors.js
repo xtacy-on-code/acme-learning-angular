@@ -19,6 +19,35 @@ const professors = [
     { name: 'Dr. Vikram Singh',    employeeId: 'EMP108', email: 'vikram.singh@acme.edu',     department: 'Mathematics',      designation: 'Professor',            gender: 'male',   specialization: 'Applied Statistics',       experience: 17, phone: '9876500108', joiningDate: joined(17) },
 ];
 
+// Generate additional professors so multi-select / bulk delete (and pagination)
+// have plenty to work with — keeps the 8 named ones above.
+const EXTRA = 32;
+const first = ['Rahul', 'Neha', 'Amit', 'Sneha', 'Karan', 'Pooja', 'Manish', 'Divya', 'Suresh', 'Ritu',
+  'Vinod', 'Asha', 'Deepak', 'Geeta', 'Nikhil', 'Sunita'];
+const last = ['Sharma', 'Verma', 'Nair', 'Iyer', 'Rao', 'Joshi', 'Singh', 'Mehta', 'Gupta', 'Reddy', 'Kapoor', 'Das'];
+const departments = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Economics'];
+const designations = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer'];
+const specializations = ['Algorithms', 'Topology', 'Astrophysics', 'Polymer Science', 'Microbiology', 'Linguistics', 'Medieval History', 'Macroeconomics'];
+const genders = ['male', 'female', 'other'];
+
+for (let i = 0; i < EXTRA; i++) {
+    const f = first[i % first.length];
+    const l = last[(i * 5) % last.length];
+    const exp = (i % 25) + 1;
+    professors.push({
+        name: `Dr. ${f} ${l}`,
+        employeeId: `EMP${200 + i}`,
+        email: `${f}.${l}${i}@acme.edu`.toLowerCase(),
+        department: departments[i % departments.length],
+        designation: designations[i % designations.length],
+        gender: genders[i % genders.length],
+        specialization: specializations[i % specializations.length],
+        experience: exp,
+        phone: `9${String(870000000 + i)}`,
+        joiningDate: joined(exp),
+    });
+}
+
 async function seed() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('MONGODB connected');

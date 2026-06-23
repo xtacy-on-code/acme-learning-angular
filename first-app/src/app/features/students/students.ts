@@ -62,6 +62,21 @@ export class Students{
     this.studentStore.deleteStudent(student);
   }
 
+  // --- Multi-select bulk delete ---
+  selectedStudents: any[] = [];
+
+  onSelectionChanged(rows: any[]) {
+    this.selectedStudents = rows;
+  }
+
+  bulkDeleteSelected() {
+    const ids = this.selectedStudents.map((s) => s._id);
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} selected student(s)? This cannot be undone.`)) return;
+    this.studentStore.bulkDeleteStudents(ids);
+    this.selectedStudents = [];
+  }
+
   onSearch(value: string) {
     this.studentStore.setSearch(value);
   }
