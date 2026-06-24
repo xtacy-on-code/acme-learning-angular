@@ -187,6 +187,25 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   selected rows, shows a "N selected → Delete selected" toolbar (professor-only, with a `confirm()`),
   and calls the store's `bulkDelete*` → service `POST /bulk-delete { ids }`. After the delete the
   store refetches and the table's data-change clears the selection.
+- **Bulk EDIT panel + "just changed" flash (both tables).** When ≥1 row is selected, a **slim
+  bar** appears below the page heading (gated by `canManage() && selected.length`) showing
+  "N students/professors selected" plus the bulk-delete + a **set-same-value** control: Students
+  edit **grade + gender**, Professors edit **department + designation** (each is *"leave blank =
+  don't change"*, so only the filled fields are applied). Apply calls the store's
+  `bulkUpdate*(ids, update)` → service `POST /bulk-update { ids, update }`; the backend does one
+  `updateMany($set)` so every selected row ends up identical on the edited fields. The store update
+  is **optimistic + in-place** (patches the matched rows with `...update`, *not* a full refetch —
+  same pattern as `updateField`) so the rows stay put and can be flashed. The page subscribes with
+  `finalize(() => applying = false)` (button never sticks on "Applying…") and toasts via the shared
+  **`core/http-error.ts` `bulkErrorMessage(err)`** helper, which surfaces the backend's
+  `{ details }`/`{ error }` or a status-specific hint (status 0 = server down; **404 = route missing,
+  usually a backend not restarted after the route was added**). On success the changed rows **flash**
+  then fade back: Professors use AG Grid's built-in `flashRows(ids)` wrapper method
+  (`gridApi.flashCells({ rowNodes, flashDuration, fadeDuration })`); Students use a `highlightIds`
+  input on `DataTable` that toggles a `.row-flash` class driving a `@keyframes rowFlash` CSS
+  animation (tinted with `--c-primary`, fading to transparent), cleared after ~1.9s. The whitelist of
+  bulk-editable fields lives **server-side** in each route (`['grade','gender']` /
+  `['department','designation']`) — extend both the panel UI and that allowlist together.
 
 ### Theming & UI (design system)
 
@@ -242,7 +261,9 @@ gates `app.listen`, serves the `uploads/` folder as static files
   `GET /stats` are open to any authenticated role; **`POST`/`PUT`/`DELETE` add
   `requireRole('professor')`** (students get read-only access). The `GET` handler does
   server-side pagination (`page`/`limit`, capped at 100), plus a `POST /bulk-delete { ids }`
-  (`deleteMany`, professor-only) for multi-select deletes. The `GET` does
+  (`deleteMany`, professor-only) for multi-select deletes and a `POST /bulk-update { ids, update }`
+  (`updateMany($set)`, professor-only) that sets the same whitelisted fields (`['grade','gender']`,
+  gender lowercased) on every selected row. The `GET` does
   case-insensitive `$regex` search
   across name/email/phone/rollno, exact-match filters for grade/gender (gender lowercased
   to match the schema enum), partial `$regex` filters for rollno/phone/email, and sorting
@@ -265,7 +286,9 @@ gates `app.listen`, serves the `uploads/` folder as static files
   `requireRole('professor')`, so only professors mutate (same read-for-all / write-for-professor
   shape as `/api/students`). `GET /` returns the **full list** (no query params — the AG Grid
   sorts/filters/pages client-side), Redis-cached under the single key `professors:all`; the
-  mutations (incl. `POST /bulk-delete { ids }` for multi-select) bust `professors:*`. Register it in
+  mutations (incl. `POST /bulk-delete { ids }` and `POST /bulk-update { ids, update }` — the latter an
+  `updateMany($set)` over the whitelist `['department','designation']`, with `runValidators` enforcing
+  the designation enum) bust `professors:*`. Register it in
   `index.js` (`app.use('/api/professors', …)`) — easy to forget.
 - **Seed scripts (one-off, idempotent — each wipes its collection then re-inserts, and clears the
   matching cache):** `node seed-professors.js` (8 named + ~32 generated = 40 professors) and

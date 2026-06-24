@@ -5,7 +5,8 @@
       "Bash(tasklist)",
       "Bash(taskkill //PID 5440 //F)",
       "Bash(timeout 40 node seed-students.js)",
-      "Bash(timeout 40 node seed-professors.js)"
+      "Bash(timeout 40 node seed-professors.js)",
+      "Bash(curl -s -o /dev/null -w \"GET / → %{http_code}\\\\n\" http://localhost:5000/)"
     ]
   }
 }

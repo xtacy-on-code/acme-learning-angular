@@ -1,17 +1,20 @@
 import { Component, computed, inject, viewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AgDataTable, DataTableColumn } from '../../shared/ag-data-table/ag-data-table';
 import { ProfessorStore } from '../../core/professor-store';
 import { ProfileStore } from '../../core/profile-store';
+import { finalize } from 'rxjs';
 import { AddProfessorDialog } from './add-professor-dialog/add-professor-dialog';
+import { bulkErrorMessage } from '../../core/http-error';
 
 const DESIGNATIONS = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer'];
 
 @Component({
   selector: 'app-professors',
-  imports: [MatButtonModule, AgDataTable],
+  imports: [MatButtonModule, FormsModule, AgDataTable],
   templateUrl: './professors.html',
   styleUrl: './professors.css',
 })
@@ -73,6 +76,55 @@ export class Professors {
     if (!confirm(`Delete ${ids.length} selected professor(s)? This cannot be undone.`)) return;
     this.professorStore.bulkDeleteProfessors(ids);
     this.selectedProfessors = [];
+  }
+
+  // --- Multi-select bulk EDIT ---
+  // The slim panel binds these. Each is "leave blank = don't change", so the user
+  // can set just the department, just the designation, or both, and we apply only
+  // the filled-in fields to every selected row.
+  designations = DESIGNATIONS;
+  bulkDepartment = '';
+  bulkDesignation = '';
+  applying = false;
+
+  applyBulkEdit() {
+    const update: Record<string, any> = {};
+    if (this.bulkDepartment.trim()) update['department'] = this.bulkDepartment.trim();
+    if (this.bulkDesignation) update['designation'] = this.bulkDesignation;
+
+    if (!Object.keys(update).length) {
+      this.snackBar.open('Set a department or designation first', 'Dismiss', { duration: 3000 });
+      return;
+    }
+
+    const ids = this.selectedProfessors.map((p) => p._id);
+    if (!ids.length) return;
+
+    this.applying = true;
+    // finalize() guarantees `applying` is reset on success, error, OR unsubscribe —
+    // so the button can never get stuck on "Applying…".
+    this.professorStore
+      .bulkUpdateProfessors(ids, update)
+      .pipe(finalize(() => (this.applying = false)))
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Updated ${ids.length} professor(s)`, '', { duration: 2000 });
+          this.agGrid()?.flashRows(ids); // flash the just-changed rows
+          this.clearBulkEdit();
+        },
+        error: (err) => {
+          console.error('bulk update failed:', err);
+          this.snackBar.open(bulkErrorMessage(err), 'Dismiss', { duration: 5000 });
+        },
+      });
+  }
+
+  // Deselect rows (closes the panel) and reset the panel's inputs.
+  clearBulkEdit() {
+    this.agGrid()?.clearSelection();
+    this.selectedProfessors = [];
+    this.bulkDepartment = '';
+    this.bulkDesignation = '';
   }
 
   // One committed cell edit → one PATCH-style request. Optimistic: AG Grid

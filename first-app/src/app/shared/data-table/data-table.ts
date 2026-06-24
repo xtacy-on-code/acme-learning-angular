@@ -27,6 +27,11 @@ export class DataTable implements OnChanges {
   // When true, a leading checkbox column lets the user multi-select rows.
   @Input() selectable: boolean = false;
 
+  // Row _ids to briefly flash-highlight (e.g. just after a bulk edit). Set it to
+  // the changed ids, then clear it after the animation; rows in this list get the
+  // `.row-flash` class, which runs a fade-back-to-normal CSS animation.
+  @Input() highlightIds: string[] = [];
+
   // Fixed set of placeholder rows rendered while loading (skeleton state).
   readonly skeletonRows = [0, 1, 2, 3, 4, 5];
 
@@ -66,6 +71,13 @@ export class DataTable implements OnChanges {
   toggleRow(row: any) {
     this.selection.toggle(row);
     this.selectionChanged.emit(this.selection.selected);
+  }
+
+  // Clear the selection on demand (e.g. a parent's "Cancel" on a bulk-action bar).
+  // Distinct from the ngOnChanges auto-clear, which only fires when `data` changes.
+  clearSelection() {
+    this.selection.clear();
+    this.selectionChanged.emit([]);
   }
 
   onEdit(item: any) {

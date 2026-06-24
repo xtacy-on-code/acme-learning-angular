@@ -7,6 +7,7 @@ import {
   GetRowIdParams,
   GridApi,
   GridReadyEvent,
+  IRowNode,
   ModuleRegistry,
   RowSelectionOptions,
   themeQuartz,
@@ -193,5 +194,25 @@ export class AgDataTable {
   // Roll a single cell back to its previous value (used on a failed save).
   revertCell(rowId: string, field: string, oldValue: any) {
     this.gridApi?.getRowNode(rowId)?.setDataValue(field, oldValue);
+  }
+
+  // Clear the current row selection. Needed after a bulk action because the grid
+  // is client-side and keys rows by _id, so a refetch keeps the same rows selected
+  // unless we explicitly deselect (selectionChanged then fires with an empty set).
+  clearSelection() {
+    this.gridApi?.deselectAll();
+  }
+
+  // Briefly flash the given rows (by _id) to signal they were just changed —
+  // AG Grid's built-in flashCells highlights the cells then fades them back to
+  // normal over fadeDuration. Rows are looked up by id (getRowId keys on _id).
+  flashRows(ids: string[]) {
+    if (!this.gridApi) return;
+    const rowNodes = ids
+      .map((id) => this.gridApi!.getRowNode(id))
+      .filter((n): n is IRowNode => !!n);
+    if (rowNodes.length) {
+      this.gridApi.flashCells({ rowNodes, flashDuration: 300, fadeDuration: 1500 });
+    }
   }
 }

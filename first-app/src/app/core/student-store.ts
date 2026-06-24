@@ -173,6 +173,24 @@ export const StudentStore = signalStore(
           next: () => { fetch(); loadStats(); },
           error: (err) => console.log('error bulk-deleting students:', err)
         });
+      },
+
+      // Set the same field values on many students at once. Returns the Observable
+      // so the page can toast success/error. Optimistic in-place patch (not a full
+      // refetch) so the updated rows stay on the page and can be flash-highlighted;
+      // replacing the array still clears the table's selection. Stats refreshed
+      // since a gender change shifts the dashboard counts.
+      bulkUpdateStudents(ids: string[], update: Record<string, any>) {
+        return studentService.bulkUpdateStudents(ids, update).pipe(
+          tap(() => {
+            patchState(store, {
+              students: store
+                .students()
+                .map((s) => (ids.includes(s._id) ? { ...s, ...update } : s)),
+            });
+            loadStats();
+          })
+        );
       }
     };
   })

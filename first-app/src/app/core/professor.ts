@@ -30,4 +30,9 @@ export class Professor {
   bulkDeleteProfessors(ids: string[]) {
     return this.http.post(`${this.apiURL}/bulk-delete`, { ids });
   }
+
+  // Apply the same field values (e.g. { department, designation }) to many professors at once.
+  bulkUpdateProfessors(ids: string[], update: Record<string, any>) {
+    return this.http.post(`${this.apiURL}/bulk-update`, { ids, update });
+  }
 }

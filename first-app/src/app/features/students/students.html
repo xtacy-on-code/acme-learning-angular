@@ -8,16 +8,6 @@
     </div>
 
     <div class="flex items-center gap-3">
-      @if (canManage() && selectedStudents.length) {
-        <span class="text-sm text-muted">
-          <span class="font-semibold text-text">{{ selectedStudents.length }}</span> selected
-        </span>
-        <button
-          (click)="bulkDeleteSelected()"
-          class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700">
-          Delete selected
-        </button>
-      }
       @if (canManage()) {
         <button mat-flat-button color="primary" (click)="openAddStudentDialog()">
           + Add Student
@@ -25,6 +15,59 @@
       }
     </div>
   </div>
+
+  <!-- Bulk-action panel: slim bar that appears only while rows are selected.
+       Lets you set the SAME grade/gender on every selected student at once (leave a
+       field blank to keep it unchanged), or bulk-delete them. -->
+  @if (canManage() && selectedStudents.length) {
+    <div class="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-card">
+      <span class="text-sm font-medium text-text">
+        {{ selectedStudents.length }} student{{ selectedStudents.length > 1 ? 's' : '' }} selected
+      </span>
+
+      <div class="h-5 w-px bg-border"></div>
+
+      <span class="text-sm text-muted">Set</span>
+
+      <select
+        [(ngModel)]="bulkGrade"
+        class="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text outline-none focus:border-primary">
+        <option value="">Grade (no change)</option>
+        @for (g of grades; track g) {
+          <option [value]="g">Grade {{ g }}</option>
+        }
+      </select>
+
+      <select
+        [(ngModel)]="bulkGender"
+        class="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text outline-none focus:border-primary">
+        <option value="">Gender (no change)</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+
+      <button
+        mat-flat-button color="primary"
+        [disabled]="applying"
+        (click)="applyBulkEdit()">
+        {{ applying ? 'Applying…' : 'Apply to ' + selectedStudents.length }}
+      </button>
+
+      <div class="ml-auto flex items-center gap-3">
+        <button
+          (click)="bulkDeleteSelected()"
+          class="rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700">
+          Delete selected
+        </button>
+        <button
+          (click)="clearBulkEdit()"
+          class="rounded-lg px-3 py-1.5 text-sm font-medium text-muted hover:text-text">
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Search + Filters -->
   <div class="rounded-xl border border-border bg-surface p-3 shadow-card">
@@ -107,6 +150,7 @@
         [showEdit]="canManage()"
         [showDelete]="canManage()"
         [selectable]="canManage()"
+        [highlightIds]="highlightIds"
         (sortChanged)="onColumnSort($event)"
         (editClicked)="editStudent($event)"
         (deleteClicked)="deleteStudent($event)"

@@ -99,6 +99,8 @@
       </ng-container>
     }
       <tr mat-header-row *matHeaderRowDef="displayedColumns" class="!bg-background"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row transition-colors duration-150 hover:!bg-surface-hover"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+        class="data-row transition-colors duration-150 hover:!bg-surface-hover"
+        [class.row-flash]="highlightIds.includes(row._id)"></tr>
 </table>
 }

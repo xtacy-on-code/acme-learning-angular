@@ -8,16 +8,6 @@
     </div>
 
     <div class="flex items-center gap-3">
-      @if (canManage() && selectedProfessors.length) {
-        <span class="text-sm text-muted">
-          <span class="font-semibold text-text">{{ selectedProfessors.length }}</span> selected
-        </span>
-        <button
-          (click)="bulkDeleteSelected()"
-          class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700">
-          Delete selected
-        </button>
-      }
       @if (canManage()) {
         <button mat-flat-button color="primary" (click)="openAddProfessorDialog()">
           + Add Professor
@@ -25,6 +15,56 @@
       }
     </div>
   </div>
+
+  <!-- Bulk-action panel: slim bar that appears only while rows are selected.
+       Lets you set the SAME department/designation on every selected professor at
+       once (leave a field blank to keep it unchanged), or bulk-delete them. -->
+  @if (canManage() && selectedProfessors.length) {
+    <div class="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-card">
+      <span class="text-sm font-medium text-text">
+        {{ selectedProfessors.length }} professor{{ selectedProfessors.length > 1 ? 's' : '' }} selected
+      </span>
+
+      <div class="h-5 w-px bg-border"></div>
+
+      <span class="text-sm text-muted">Set</span>
+
+      <input
+        type="text"
+        placeholder="Department"
+        [(ngModel)]="bulkDepartment"
+        class="w-44 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
+
+      <select
+        [(ngModel)]="bulkDesignation"
+        class="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text outline-none focus:border-primary">
+        <option value="">Designation (no change)</option>
+        @for (d of designations; track d) {
+          <option [value]="d">{{ d }}</option>
+        }
+      </select>
+
+      <button
+        mat-flat-button color="primary"
+        [disabled]="applying"
+        (click)="applyBulkEdit()">
+        {{ applying ? 'Applying…' : 'Apply to ' + selectedProfessors.length }}
+      </button>
+
+      <div class="ml-auto flex items-center gap-3">
+        <button
+          (click)="bulkDeleteSelected()"
+          class="rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700">
+          Delete selected
+        </button>
+        <button
+          (click)="clearBulkEdit()"
+          class="rounded-lg px-3 py-1.5 text-sm font-medium text-muted hover:text-text">
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Grid (autoHeight: sizes to its rows, so the card grows with content) -->
   <div class="overflow-hidden rounded-xl border border-border bg-surface shadow-card">

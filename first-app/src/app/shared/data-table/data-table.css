@@ -55,3 +55,17 @@ tr.data-row:hover .row-actions,
   background-color: rgba(220, 38, 38, 0.15);
   color: #DC2626;
 }
+
+/* Flash-highlight for rows that were just bulk-edited: start tinted with the
+   primary color, then fade back to a normal (transparent) background. */
+@keyframes rowFlash {
+  from {
+    background-color: color-mix(in srgb, var(--c-primary) 28%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+tr.row-flash {
+  animation: rowFlash 1.8s ease-out;
+}

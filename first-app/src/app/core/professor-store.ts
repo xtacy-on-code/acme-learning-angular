@@ -87,6 +87,22 @@ export const ProfessorStore = signalStore(
           error: (err) => console.log('error bulk-deleting professors:', err),
         });
       },
+
+      // Set the same field values on many professors at once. Returns the
+      // Observable so the page can toast success/error. Optimistic + in-place
+      // (like updateField, not a full refetch) so the affected rows keep their
+      // grid nodes — that lets the page flash exactly those rows after the save.
+      bulkUpdateProfessors(ids: string[], update: Record<string, any>) {
+        return service.bulkUpdateProfessors(ids, update).pipe(
+          tap(() =>
+            patchState(store, {
+              professors: store
+                .professors()
+                .map((p) => (ids.includes(p._id) ? { ...p, ...update } : p)),
+            })
+          )
+        );
+      },
     };
   })
 );

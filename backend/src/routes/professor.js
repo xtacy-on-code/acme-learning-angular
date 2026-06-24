@@ -67,4 +67,29 @@ router.post('/bulk-delete', requireRole('professor'), async (req, res) => {
     }
 });
 
+// Bulk update (multi-select) — set the SAME field values on many professors at
+// once. updateMany applies one $set to every matched doc, so all selected rows
+// end up identical on the edited fields. Whitelisted fields, only $set the ones
+// provided. runValidators enforces the designation enum on the $set value.
+router.post('/bulk-update', requireRole('professor'), async (req, res) => {
+    try {
+        const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+        const update = (req.body.update && typeof req.body.update === 'object') ? req.body.update : {};
+        if (!ids.length) return res.status(400).json({ error: 'No ids provided' });
+
+        const ALLOWED = ['department', 'designation'];
+        const set = {};
+        ALLOWED.forEach((field) => {
+            if (update[field] !== undefined && update[field] !== '') set[field] = update[field];
+        });
+        if (!Object.keys(set).length) return res.status(400).json({ error: 'No fields to update' });
+
+        const result = await Professor.updateMany({ _id: { $in: ids } }, { $set: set }, { runValidators: true });
+        await invalidatePattern('professors:*');  // ← bust the cache
+        res.status(200).json({ message: 'Updated successfully!', modifiedCount: result.modifiedCount });
+    } catch (err) {
+        res.status(400).json({ error: 'Failed to update professors', details: err.message });
+    }
+});
+
 module.exports = router;

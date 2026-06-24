@@ -139,4 +139,32 @@ router.post('/bulk-delete', auth, requireRole('professor'), async (req, res) => 
     }
 });
 
+// Bulk update (multi-select) — set the SAME field values on many students at once.
+// updateMany applies one $set to every matched doc, so all selected rows end up
+// identical on the edited fields. We whitelist which fields may be bulk-edited and
+// only $set the ones actually provided (so you can change just grade, or just
+// gender, or both). runValidators enforces the schema enums on the $set values.
+router.post('/bulk-update', auth, requireRole('professor'), async (req, res) => {
+    try {
+        const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+        const update = (req.body.update && typeof req.body.update === 'object') ? req.body.update : {};
+        if (!ids.length) return res.status(400).json({ error: 'No ids provided' });
+
+        const ALLOWED = ['grade', 'gender'];
+        const set = {};
+        ALLOWED.forEach((field) => {
+            if (update[field] !== undefined && update[field] !== '') {
+                set[field] = field === 'gender' ? String(update[field]).toLowerCase() : update[field];
+            }
+        });
+        if (!Object.keys(set).length) return res.status(400).json({ error: 'No fields to update' });
+
+        const result = await Student.updateMany({ _id: { $in: ids } }, { $set: set }, { runValidators: true });
+        await invalidatePattern('students:*');  // ← bust the cache
+        res.status(200).json({ message: 'Updated successfully!', modifiedCount: result.modifiedCount });
+    } catch (err) {
+        res.status(400).json({ error: 'Failed to update students', details: err.message });
+    }
+});
+
 module.exports = router;

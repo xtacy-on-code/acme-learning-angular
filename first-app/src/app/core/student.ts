@@ -60,4 +60,9 @@ export class Student {
   bulkDeleteStudents(ids: string[]) {
     return this.http.post(`${this.apiURL}/bulk-delete`, { ids });
   }
+
+  // Apply the same field values (e.g. { grade, gender }) to many students at once.
+  bulkUpdateStudents(ids: string[], update: Record<string, any>) {
+    return this.http.post(`${this.apiURL}/bulk-update`, { ids, update });
+  }
 }
