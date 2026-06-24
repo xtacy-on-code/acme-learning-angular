@@ -1,0 +1,45 @@
+<div class="flex h-full min-h-0 flex-col gap-5">
+
+  <!-- Page heading -->
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-text">Gallery</h1>
+      <p class="mt-1 text-sm text-muted">Moments from campus life — students, faculty and events.</p>
+    </div>
+    <span class="hidden shrink-0 rounded-full border border-border bg-surface px-3 py-1 text-sm text-muted sm:inline">
+      {{ images.length }} photos
+    </span>
+  </div>
+
+  <!-- Scrollable masonry gallery -->
+  <div class="-mr-1 flex-1 min-h-0 overflow-y-auto pr-1">
+    <div class="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
+      @for (img of images; track img.src) {
+        <figure
+          class="group mb-4 break-inside-avoid overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+          <div class="relative overflow-hidden">
+            <img
+              [src]="img.src"
+              [alt]="img.title"
+              loading="lazy"
+              (error)="onImgError($event)"
+              class="block w-full transition-transform duration-300 ease-out group-hover:scale-105" />
+
+            <!-- Category pill -->
+            <span
+              class="absolute left-3 top-3 rounded-full bg-background/75 px-2.5 py-1 text-xs font-medium text-text backdrop-blur-sm">
+              {{ img.tag }}
+            </span>
+
+            <!-- Caption gradient on hover -->
+            <figcaption
+              class="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-8 text-sm font-medium text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+              {{ img.title }}
+            </figcaption>
+          </div>
+        </figure>
+      }
+    </div>
+  </div>
+
+</div>

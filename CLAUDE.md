@@ -95,17 +95,29 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   kept in `localStorage` under `role`. All are set/refreshed at login — tokens issued before roles
   existed lack one, so those users must re-login.
 - **Routing (`app.routes.ts`):** `/login` and `/signup` are public; `students`, `home`,
-  `professors`, and `profile` nest under `MainLayout` behind `authGuard`. `''` redirects to `login`.
-  `professors` is **lazy-loaded** (`loadComponent`) so AG Grid ships in its own chunk (see below);
+  `professors`, `gallery`, and `profile` nest under `MainLayout` behind `authGuard`. `''` redirects to
+  `login`. `professors`, `home`, and `gallery` are **lazy-loaded** (`loadComponent`) so each ships in
+  its own chunk. `professors` is lazy so AG Grid ships in its own chunk (see below);
   it's open to any logged-in user (read-only for students) — role isn't gated at the route level,
   only in-component. Each route
   carries a `title` string (e.g. `'Students · Acme'`) — Angular Router's native `TitleStrategy`
   sets the browser-tab title on every navigation (no `Title` service or custom strategy). This is
   separate from `header.ts`'s `pageTitle()` signal, which drives the in-page `<h1>`. `index.html`
   keeps a neutral `<title>Acme</title>` fallback that the Router overrides on navigation.
+- **Gallery (`features/gallery`, route `/gallery`, lazy-loaded, sidebar link for all users).** A
+  simple scrollable photo gallery — a **CSS-columns masonry** (`columns-1 → sm:2 → lg:3 → xl:4` with
+  `break-inside-avoid` cards) of themed sample images, each with a category pill (Campus / Students /
+  Faculty / Events) and a caption that slides up on hover. The component holds a static `images[]`
+  array; **photos are placeholders** sourced from **LoremFlickr** keyword URLs (`loremflickr.com/
+  <w>/<h>/<keyword>?lock=<n>` — `lock` pins a stable image) with an `(error)` → Lorem Picsum
+  fallback so a tile never shows a broken image. Keywords are intentionally **object/place oriented**
+  (`books`, `building`, `laptop`, `research`, `technology`, `school`, `sports`, `city`, `desk`) —
+  people-heavy tags (`concert`/`music`/`exam`/…) returned irrelevant **or unsuitable** photos and are
+  avoided; LoremFlickr is also flaky (keywords intermittently 500), hence the fallback. Meant to be
+  swapped for real campus photos later (e.g. files under `first-app/public/` or a proper upload flow).
 - **Layout vs features vs shared:** `layout/` holds chrome (header, footer, sidebar,
   main-layout), `features/` holds routed pages (home, login, signup, students, professors,
-  profile), and `shared/data-table` (Material) + `shared/ag-data-table` (AG Grid) are the two
+  gallery, profile), and `shared/data-table` (Material) + `shared/ag-data-table` (AG Grid) are the two
   reusable tables. The `Header` derives its
   title from the active route (`Router` `NavigationEnd`) and shows the current user's
   avatar/name from `ProfileStore`. `DataTable` takes a `loading` input and renders three states:

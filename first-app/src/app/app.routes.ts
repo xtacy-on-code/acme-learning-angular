@@ -31,6 +31,13 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/home/home').then((m) => m.Home),
                 title: 'Home · Acme'
             },
+            // Lazy-loaded so the gallery (and its image grid) stays out of the
+            // initial bundle, like the other secondary pages.
+            {
+                path: 'gallery',
+                loadComponent: () => import('./features/gallery/gallery').then((m) => m.Gallery),
+                title: 'Gallery · Acme'
+            },
             { path: 'profile', component: UserProfile, title: 'Profile · Acme' }
         ]
     },

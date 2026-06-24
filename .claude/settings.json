@@ -6,7 +6,8 @@
       "Bash(taskkill //PID 5440 //F)",
       "Bash(timeout 40 node seed-students.js)",
       "Bash(timeout 40 node seed-professors.js)",
-      "Bash(curl -s -o /dev/null -w \"GET / → %{http_code}\\\\n\" http://localhost:5000/)"
+      "Bash(curl -s -o /dev/null -w \"GET / → %{http_code}\\\\n\" http://localhost:5000/)",
+      "PowerShell(cd \"C:\\\\Users\\\\Vedant\\\\Desktop\\\\vedant\\\\acme-learning-angular\\\\first-app\"; npm run build 2>&1 | Select-String -Pattern \"ERROR|complete|failed|TS[0-9]\" | Select-Object -First 15; \"----- probe loremflickr -----\"; try { $r = Invoke-WebRequest -Uri \"https://loremflickr.com/800/600/graduation?lock=19\" -Method Head -TimeoutSec 12 -MaximumRedirection 5; \"graduation -> $\\($r.StatusCode\\) $\\($r.Headers['Content-Type']\\)\" } catch { \"graduation -> ERR $\\($_.Exception.Message\\)\" })"
     ]
   }
 }

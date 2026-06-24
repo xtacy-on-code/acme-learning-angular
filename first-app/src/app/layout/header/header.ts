@@ -36,6 +36,8 @@ export class Header {
 
   private titleFor(url: string): string {
     if (url.startsWith('/students')) return 'Students';
+    if (url.startsWith('/professors')) return 'Professors';
+    if (url.startsWith('/gallery')) return 'Gallery';
     if (url.startsWith('/profile')) return 'Profile';
     if (url.startsWith('/home')) return 'Home';
     return 'Overview';
