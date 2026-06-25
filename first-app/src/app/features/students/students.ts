@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AddStudentDialog } from './add-student-dialog/add-student-dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { DataTable } from "../../shared/data-table/data-table";
+import { DataTable, DataTableColumn } from "../../shared/data-table/data-table";
 import { StudentStore } from '../../core/student-store';
 import { ProfileStore } from '../../core/profile-store';
 import { bulkErrorMessage } from '../../core/http-error';
@@ -21,13 +21,12 @@ import { finalize } from 'rxjs'
 
 
 export class Students{
-  columns = [
-    { key: 'name', label: 'Name', sortable: true },
-    { key: 'rollno', label: 'Roll No', sortable: true },
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'grade', label: 'Grade', sortable: true },
-    { key: 'phone', label: 'Phone', sortable: true },
-    { key: 'gender', label: 'Gender', sortable: true }
+  columns: DataTableColumn[] = [
+    { key: 'name', label: 'Student', sortable: true, cellType: 'user', secondaryKey: 'email' },
+    { key: 'rollno', label: 'Roll No', sortable: true, cellType: 'mono' },
+    { key: 'grade', label: 'Grade', sortable: true, cellType: 'pill' },
+    { key: 'phone', label: 'Phone', sortable: true, cellType: 'mono' },
+    { key: 'gender', label: 'Gender', sortable: true, cellType: 'genderBadge' },
   ];
 
   studentStore = inject(StudentStore);
@@ -39,6 +38,14 @@ export class Students{
 
   // Grade/gender option lists for the bulk-edit panel selects.
   grades = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+  // Gender filter chips ('' = all). Bound to the toolbar's segmented control.
+  genderChips = [
+    { value: '', label: 'All' },
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'other', label: 'Other' },
+  ];
 
   // Only professors may add/edit/delete; students get a read-only table.
   // Reads the shared ProfileStore signal (header/sidebar already populate it).

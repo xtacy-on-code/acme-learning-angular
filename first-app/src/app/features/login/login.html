@@ -1,33 +1,43 @@
-<div class="flex h-screen items-center justify-center bg-background">
-  <div class="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-card">
-    <div class="mb-8">
-      <span class="text-lg font-semibold text-text">Acme<span class="text-primary">.</span></span>
-      <h2 class="mt-4 text-xl font-semibold text-text">Welcome back</h2>
-      <p class="mt-1 text-sm text-muted">Log in to access your account.</p>
+<div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-8">
+  <!-- Soft primary glow backdrop -->
+  <div class="pointer-events-none absolute inset-0"
+       style="background: radial-gradient(900px 500px at 80% -10%, color-mix(in srgb, var(--c-primary) 12%, transparent), transparent 70%);"></div>
+
+  <div class="relative w-full max-w-sm">
+    <!-- Brand mark -->
+    <div class="mb-7 flex items-center gap-2.5">
+      <div class="flex h-9 w-9 items-center justify-center rounded-[9px] bg-primary text-base font-bold text-on-primary">A</div>
+      <span class="text-[17px] font-bold tracking-tight text-text">Acme Learning</span>
     </div>
 
-    <form [formGroup]="loginForm" (ngSubmit)="handleSubmit()" class="flex flex-col gap-4">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-sm font-medium text-text">Email</label>
-        <input formControlName="email" type="email" placeholder="you@example.com"
-               class="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary">
-      </div>
+    <div class="rounded-2xl border border-border bg-surface p-8 shadow-card">
+      <h1 class="text-xl font-bold tracking-tight text-text">Welcome back</h1>
+      <p class="mt-1 text-sm text-muted">Log in to access your account.</p>
 
-      <div class="flex flex-col gap-1.5">
-        <label class="text-sm font-medium text-text">Password</label>
-        <input formControlName="password" type="password" placeholder="••••••••"
-               class="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary">
-      </div>
+      <form [formGroup]="loginForm" (ngSubmit)="handleSubmit()" class="mt-6 flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-text">Email</label>
+          <input formControlName="email" type="email" placeholder="you@acme.edu"
+                 class="h-10 rounded-lg border border-border-strong bg-surface px-3 text-sm text-text outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
+        </div>
 
-      <button type="submit"
-              class="mt-2 rounded-lg bg-primary py-2.5 text-sm font-medium text-on-primary transition-colors hover:bg-primary-hover">
-        Log in
-      </button>
-    </form>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-text">Password</label>
+          <input formControlName="password" type="password" placeholder="••••••••"
+                 class="h-10 rounded-lg border border-border-strong bg-surface px-3 text-sm text-text outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
+        </div>
 
-    <p class="mt-6 text-center text-sm text-muted">
-      Don't have an account?
-      <a routerLink="/signup" class="font-medium text-primary hover:text-primary-hover">Sign up</a>
-    </p>
+        <button type="submit"
+                class="mt-2 h-[42px] rounded-lg bg-primary text-sm font-semibold text-on-primary transition-colors hover:bg-primary-hover">
+          Log in
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-muted">
+        Don't have an account?
+        <a routerLink="/signup" class="font-semibold text-primary hover:text-primary-hover">Sign up</a>
+      </p>
+    </div>
+    <p class="mt-5 text-center text-xs text-faint">By continuing you agree to Acme's Terms &amp; Privacy Policy.</p>
   </div>
 </div>

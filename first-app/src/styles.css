@@ -22,10 +22,22 @@
   --color-on-primary: var(--c-on-primary);
   --color-background: var(--c-background);
   --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
   --color-surface-hover: var(--c-surface-hover);
   --color-text: var(--c-text);
   --color-muted: var(--c-muted);
+  --color-faint: var(--c-faint);
   --color-border: var(--c-border);
+  --color-border-strong: var(--c-border-strong);
+}
+
+/*
+  Typography — Inter for UI text, JetBrains Mono for IDs / roll numbers / phones.
+  Loaded via <link> in index.html. Exposed as Tailwind's font-sans / font-mono.
+*/
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 }
 
 /* Soft, theme-aware card elevation. Pairs with border-border for definition. */
@@ -33,19 +45,22 @@
   box-shadow: var(--c-shadow);
 }
 
-/* Default — warm off-white page, white cards, deep indigo primary, crisp text */
+/* Default — cool zinc-gray page, white cards, deep indigo primary, crisp text */
 :root,
 [data-theme='default'] {
   --c-primary: #4f46e5;
   --c-primary-hover: #4338ca;
   --c-on-primary: #ffffff;
-  --c-background: #f5f4f0;
+  --c-background: #f7f7f8;
   --c-surface: #ffffff;
-  --c-surface-hover: #edeae3;
-  --c-text: #1c1b29;
-  --c-muted: #6c6a7a;
-  --c-border: #e4e1d8;
-  --c-shadow: 0 1px 2px 0 rgb(20 20 40 / 0.04), 0 4px 12px -3px rgb(20 20 40 / 0.08);
+  --c-surface-2: #f4f4f5;
+  --c-surface-hover: #f1f1f3;
+  --c-text: #18181b;
+  --c-muted: #6b6b76;
+  --c-faint: #a1a1aa;
+  --c-border: #ececef;
+  --c-border-strong: #e1e1e6;
+  --c-shadow: 0 1px 2px 0 rgb(24 24 40 / 0.04), 0 4px 16px -6px rgb(24 24 40 / 0.1);
   color-scheme: light;
 }
 
@@ -56,10 +71,13 @@
   --c-on-primary: #191427;
   --c-background: #111318;
   --c-surface: #1c1f26;
+  --c-surface-2: #232730;
   --c-surface-hover: #2a2e38;
   --c-text: #e7e7f0;
   --c-muted: #9aa4b7;
+  --c-faint: #6b7280;
   --c-border: #2d323e;
+  --c-border-strong: #3a4150;
   --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
@@ -71,10 +89,13 @@
   --c-on-primary: #042530;
   --c-background: #060d1f;
   --c-surface: #0d1f3c;
+  --c-surface-2: #112a4d;
   --c-surface-hover: #163357;
   --c-text: #d6ecf9;
   --c-muted: #7fa6c8;
+  --c-faint: #5f86a8;
   --c-border: #1d3a63;
+  --c-border-strong: #244a7a;
   --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(2 12 30 / 0.6);
   color-scheme: dark;
 }
@@ -86,10 +107,13 @@
   --c-on-primary: #04231a;
   --c-background: #0a1a0f;
   --c-surface: #132a1a;
+  --c-surface-2: #173322;
   --c-surface-hover: #1d3d28;
   --c-text: #d4f0de;
   --c-muted: #7fae90;
+  --c-faint: #5f8e70;
   --c-border: #21422d;
+  --c-border-strong: #2a5238;
   --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(2 15 8 / 0.6);
   color-scheme: dark;
 }
@@ -101,10 +125,13 @@
   --c-on-primary: #2a1607;
   --c-background: #1a0f0a;
   --c-surface: #2a1810;
+  --c-surface-2: #341e13;
   --c-surface-hover: #3d2417;
   --c-text: #fce7d6;
   --c-muted: #c19a7e;
+  --c-faint: #a17a5e;
   --c-border: #3f2819;
+  --c-border-strong: #4f3420;
   --c-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(15 6 2 / 0.6);
   color-scheme: dark;
 }
@@ -174,6 +201,8 @@
 
 /* Crisp font rendering for the dashboard typography */
 body {
+  font-family: var(--font-sans);
+  letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

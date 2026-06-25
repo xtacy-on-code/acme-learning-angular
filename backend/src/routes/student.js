@@ -16,7 +16,13 @@ router.get('/', auth, async (req, res) => {
         const sortBy = ALLOWED_SORT_FIELDS.includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
-        const cacheKey = `students:${page}:${limit}:${search}:${sortBy}:${sortOrder}:${req.query.grade || ''}:${req.query.gender || ''}`;
+        // Every query param that changes the result MUST be in the cache key, else
+        // two different filters collide on one key and the wrong cached list is
+        // returned. rollno/phone/email were missing → those filters appeared dead.
+        const cacheKey =
+            `students:${page}:${limit}:${search}:${sortBy}:${sortOrder}` +
+            `:${req.query.grade || ''}:${req.query.gender || ''}` +
+            `:${req.query.rollno || ''}:${req.query.phone || ''}:${req.query.email || ''}`;
 
         const query = {};
 

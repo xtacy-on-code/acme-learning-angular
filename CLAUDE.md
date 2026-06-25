@@ -61,7 +61,10 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
     `debounceTime(300)` + `switchMap` means every list operation (`setPage`, `setSearch`,
     `setFilter`, `setSort`, `clearAllFilters`, and the mutation methods) just patches state
     and calls `fetch()` — the only place that triggers a reload. `loadStudents()` is a no-op
-    once `loaded` is true.
+    once `loaded` is true. The `filters` state still has `rollno`/`phone`/`email` fields and the
+    backend still honors them, but the **Students toolbar UI exposes only search + grade + gender**
+    (the dedicated roll-no/phone inputs were removed — the main search already regex-matches
+    name/email/phone/rollno, so they were redundant).
   - **`core/profile-store.ts`** holds the single logged-in user (`user`, plus `loaded`/
     `loading`/`saving`/`uploading` flags). Simpler than StudentStore — no `rxMethod`, just
     plain `.subscribe` in `loadProfile`/`updateProfile`/`uploadImage`. Because it's a root
@@ -93,7 +96,10 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   the **JWT role** (enforced by the backend) and the **`ProfileStore.user().role`** from
   `/api/profile` (drives reactive UI like the role badge and the read-only toggles); a copy is also
   kept in `localStorage` under `role`. All are set/refreshed at login — tokens issued before roles
-  existed lack one, so those users must re-login.
+  existed lack one, so those users must re-login. The **login/signup screens** are a branded
+  centered card over a radial-gradient backdrop (brand mark + heading); on signup the `role` control
+  is picked via **two selectable cards** (`roleOptions` + `selectRole()` in `signup.ts`), not Material
+  radio buttons.
 - **Routing (`app.routes.ts`):** `/login` and `/signup` are public; `students`, `home`,
   `professors`, `gallery`, and `profile` nest under `MainLayout` behind `authGuard`. `''` redirects to
   `login`. `professors`, `home`, and `gallery` are **lazy-loaded** (`loadComponent`) so each ships in
@@ -102,7 +108,8 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   only in-component. Each route
   carries a `title` string (e.g. `'Students · Acme'`) — Angular Router's native `TitleStrategy`
   sets the browser-tab title on every navigation (no `Title` service or custom strategy). This is
-  separate from `header.ts`'s `pageTitle()` signal, which drives the in-page `<h1>`. `index.html`
+  separate from `header.ts`'s `pageTitle()`/`pageSubtitle()` signals, which drive the **header's**
+  `<h1>` + subtitle (feature pages no longer render their own heading). `index.html`
   keeps a neutral `<title>Acme</title>` fallback that the Router overrides on navigation.
 - **Gallery (`features/gallery`, route `/gallery`, lazy-loaded, sidebar link for all users).** A
   simple scrollable photo gallery — a **CSS-columns masonry** (`columns-1 → sm:2 → lg:3 → xl:4` with
@@ -119,9 +126,15 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   main-layout), `features/` holds routed pages (home, login, signup, students, professors,
   gallery, profile), and `shared/data-table` (Material) + `shared/ag-data-table` (AG Grid) are the two
   reusable tables. The `Header` derives its
-  title from the active route (`Router` `NavigationEnd`) and shows the current user's
-  avatar/name from `ProfileStore`. `DataTable` takes a `loading` input and renders three states:
-  skeleton rows while loading, a centered empty state when there are no rows, else the table.
+  title from the active route (`Router` `NavigationEnd`) — a `pageTitle()` signal plus a
+  `pageSubtitle()` companion shown beneath it — and shows the current user's avatar/name (with a
+  small role-badge chip) from `ProfileStore`; it's `sticky` with a backdrop blur. **The feature
+  pages no longer carry their own `<h1>`** — the header is the single place the page title/subtitle
+  appear, so each routed page starts straight at its content/toolbar. `main-layout` centers the
+  routed content in a `max-w-[1280px]` column; the `sidebar` marks the active nav link with a
+  `bg-primary/10 text-primary` **pill** (not a left border). `DataTable` takes a `loading` input and
+  renders three states: skeleton rows while loading, a centered empty state when there are no rows,
+  else the table.
   `shared/chart` (`ChartComponent`, selector `app-chart`) is a thin reusable wrapper over
   **Chart.js** (the lib is used directly — no `ng2-charts` — to avoid Angular-version peer-dep
   conflicts): it takes a `config` **signal input** (a Chart.js `ChartConfiguration`) and an
@@ -187,6 +200,21 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   duplicate fails server-side and reverts. There is **no dialog-based edit button** on Professors
   (inline editing replaces it) — only Add + Delete; `showEdit` is `false`. (Students' Material table
   still uses the dialog edit via `DataTable`.)
+- **Rich cells (both tables).** `DataTableColumn` carries an optional `cellType:
+  'user'|'mono'|'pill'|'genderBadge'|'designationBadge'|'text'` (+ `secondaryKey` for the `user`
+  cell's second line) so a column renders as an avatar-initials + name/email block (`user`),
+  monospace text (`mono`, for IDs/roll/phone), a neutral chip (`pill`, e.g. grade), or a colored
+  badge (`genderBadge`/`designationBadge`). Both wrappers honor the **same** `cellType`: the
+  Material `DataTable` switches in its cell template (with `initials()`/`genderBadgeClass()` helpers
+  in `data-table.ts`); the AG Grid wrapper maps it to cell renderers — `user-cell.ts` and
+  `badge-cell.ts` (new `ICellRendererAngularComp`s alongside `actions-cell.ts`), or `cellClass:
+  'font-mono'` for `mono`. **Renderers coexist with inline editing** — a column can be both
+  `editable` and a `…Badge`: double-click swaps in the editor, commit recreates the cell (the
+  renderers `refresh() => false`). Students fold `email` into the name's `user` cell (no separate
+  Email column); Professors keep all columns but render name as `user`, employeeId/phone as `mono`,
+  designation/gender as badges. The AG theme (`acmeGridTheme`) sets extra params now (Inter
+  `fontFamily`, `headerBackgroundColor: var(--c-surface-2)`, taller `rowHeight`, `wrapperBorder:
+  false` since the page card supplies the border/radius).
 - **Multi-select + bulk delete (both tables).** Both tables take a `selectable` input (bound to
   `canManage()`) and emit `selectionChanged` with the selected row objects. `DataTable` (Material)
   renders a leading checkbox column via CDK `SelectionModel` + `MatCheckbox` (header select-all +
@@ -225,17 +253,26 @@ The app ships 5 user-switchable themes (Default, Dark, Ocean, Forest, Sunset) bu
 custom properties + Tailwind v4** — deliberately **not** the Angular Material SCSS theming system.
 
 - **`src/styles.css` is the single source of theme truth.** Each `[data-theme]` block defines a
-  raw `--c-*` ramp (`--c-background` darkest → `--c-surface` → `--c-surface-hover` lightest, plus
-  `--c-primary` / `--c-primary-hover` / `--c-on-primary` / `--c-text` / `--c-muted` / `--c-border`
-  and a `--c-shadow`). `@theme inline { --color-surface: var(--c-surface); … }` maps those into
-  Tailwind's color namespace, so utilities (`bg-surface`, `text-primary`, `border-border`,
-  `text-muted`, `text-on-primary`, etc.) resolve to the vars **at runtime** — flipping
-  `data-theme` on `<html>` re-colors everything instantly. There's also a `@utility shadow-card`
-  driven by `--c-shadow`.
+  raw `--c-*` ramp: surfaces `--c-background` darkest → `--c-surface` → `--c-surface-2` (subtle
+  fill: table headers, chips, kbd) → `--c-surface-hover` (hover/elevation), plus `--c-primary` /
+  `--c-primary-hover` / `--c-on-primary`, text `--c-text` → `--c-muted` → `--c-faint` (tertiary:
+  captions, placeholders), borders `--c-border` (hairline) / `--c-border-strong` (inputs/controls),
+  and a `--c-shadow`. `@theme inline { --color-surface: var(--c-surface); … }` maps those into
+  Tailwind's color namespace, so utilities (`bg-surface`, `bg-surface-2`, `text-primary`,
+  `border-border`, `border-border-strong`, `text-muted`, `text-faint`, `text-on-primary`, etc.)
+  resolve to the vars **at runtime** — flipping `data-theme` on `<html>` re-colors everything
+  instantly. There's also a `@utility shadow-card` driven by `--c-shadow`. **When adding a token,
+  add it to all five `[data-theme]` blocks AND the `@theme inline` map together.** The **Default**
+  theme is a cool zinc-gray (bg `#f7f7f8`, white cards); the other four stay dark. **Typography:** a
+  separate `@theme { --font-sans: 'Inter'…; --font-mono: 'JetBrains Mono'… }` block sets Tailwind's
+  `font-sans`/`font-mono`; the fonts are loaded via `<link>` in `index.html` and `body` is Inter.
+  Use `font-mono` for IDs/roll numbers/phones.
 - **Material follows the same vars.** A `:root` block remaps `--mat-sys-*` tokens to the `--c-*`
-  vars so the Material table/paginator/dialog/form-fields and **filled buttons** (`mat-flat-button
-  color="primary"` → `--mat-sys-primary` bg + `--mat-sys-on-primary` text) track the theme. If you
-  change a theme's colors, this mapping already flows through — no per-component work.
+  vars so the Material table/paginator/dialog and the **add-student / add-professor dialog
+  form-fields** (the profile page no longer uses Material form-fields — it's plain themed inputs)
+  plus **filled buttons** (`mat-flat-button color="primary"` → `--mat-sys-primary` bg +
+  `--mat-sys-on-primary` text) track the theme. If you change a theme's colors, this mapping already
+  flows through — no per-component work.
 - **`core/theme.service.ts`** holds `theme = signal<Theme>()`, initialized from `localStorage`
   (`acme-theme`); an `effect()` writes `data-theme` onto `<html>` and persists on change.
   `THEMES` (id/label/bg/accent) drives the **`shared/theme-picker`** swatches in the sidebar.
@@ -324,12 +361,14 @@ in three helpers used by the routes (not the client directly):
 - `invalidatePattern(pattern)` — `keys(pattern)` then `del` the matches (used as `students:*`).
 
 `student.js` and `professor.js` are the consumers: `student.js` `GET /` caches under
-`students:<page>:<limit>:<search>:<sortBy>:<sortOrder>:<grade>:<gender>` (default 60s TTL — the key
-encodes the full query so each filter combo caches separately) and `GET /stats` under
-`students:stats` (120s TTL); `professor.js` `GET /` caches the whole list under `professors:all`
-(60s). Every write path busts its prefix (`students:*` / `professors:*`). When adding a cached
-endpoint, fold **all** query params that change the result into the key, and invalidate it from
-every mutation that can stale it.
+`students:<page>:<limit>:<search>:<sortBy>:<sortOrder>:<grade>:<gender>:<rollno>:<phone>:<email>`
+(default 60s TTL — the key encodes the **full** query so each filter combo caches separately) and
+`GET /stats` under `students:stats` (120s TTL); `professor.js` `GET /` caches the whole list under
+`professors:all` (60s). Every write path busts its prefix (`students:*` / `professors:*`). When
+adding a cached endpoint, fold **all** query params that change the result into the key, and
+invalidate it from every mutation that can stale it. (Lesson learned: `rollno`/`phone`/`email` were
+once **missing** from the key, so those filters collided with the unfiltered key and silently
+returned the cached full list — a filter that looks dead but isn't is usually a missing key part.)
 
 Models: `src/models/User.js` (`name`, `email` [unique], `password`, `role` [`student`|`professor`
 enum, default `student`], plus profile fields `profileImage`, `phone`, `bio`, `dob`, `address`),
@@ -347,9 +386,13 @@ frontend with `?t=<updatedAt>` since the filename is stable per user.
   `text-text`, `text-muted`, `border-border`, `bg-primary`, `text-on-primary`, …) — no hardcoded
   hex in templates or component CSS (component CSS may use `var(--c-*)`). See "Theming & UI".
 - Tests are Vitest `.spec.ts` files colocated with their component/service.
-- **Form validation** uses reactive-forms validators with inline `mat-error`s. Note the profile
-  form (`features/profile/profile.ts`) deliberately uses a **custom email pattern** (not
-  `Validators.email`, which accepts `a@b`), a phone pattern (optional `+`, 10–15 digits), and a
-  custom `dobValidator` (real date, not future, after 1900) paired with datepicker `[min]`/`[max]`.
-  Reuse this shape (pattern/custom validator + `mat-error`) rather than the looser built-ins when a
-  field needs real validation.
+- **Form validation** uses reactive-forms validators. The Material dialogs (add-student /
+  add-professor) render errors as inline `mat-error`s; the **profile page** uses **plain themed
+  inputs** (label-above, *not* Material form-fields — see the design note below) with inline
+  `text-red-500` error spans. The profile form (`features/profile/profile.ts`) deliberately uses a
+  **custom email pattern** (not `Validators.email`, which accepts `a@b`), a phone pattern (optional
+  `+`, 10–15 digits), and a custom `dobValidator` (real date, not future, after 1900). DOB is a
+  **native `<input type="date">`** whose control value is a `'yyyy-mm-dd'` string (so the `effect`
+  that patches the form from `user` formats `user.dob` to that, and Cancel/`resetForm()` re-patches
+  it) — `[min]`/`[max]` take string bounds. Reuse this shape (pattern/custom validator + an inline
+  error) rather than the looser built-ins when a field needs real validation.

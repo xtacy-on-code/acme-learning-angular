@@ -13,6 +13,8 @@ import {
   themeQuartz,
 } from 'ag-grid-community';
 import { ActionsCellComponent } from './actions-cell';
+import { UserCellComponent } from './user-cell';
+import { BadgeCellComponent } from './badge-cell';
 
 // Register AG Grid's community features once, before any grid renders. Done here
 // (not in main.ts) so AllCommunityModule lands in the lazy-loaded chunk that uses
@@ -30,6 +32,11 @@ export interface DataTableColumn {
   editable?: boolean;
   editorType?: 'text' | 'number' | 'select';
   editorParams?: { values: string[] };
+  // Optional rich-cell rendering hint (mirrors the Material DataTable column shape
+  // so the two tables stay interchangeable). 'text' (default) renders plain text.
+  cellType?: 'user' | 'mono' | 'pill' | 'genderBadge' | 'designationBadge' | 'text';
+  // For the 'user' cell: the field holding the secondary line (e.g. email).
+  secondaryKey?: string;
 }
 
 // Theme built with AG Grid's modern Theming API (not the legacy CSS themes).
@@ -39,11 +46,22 @@ export interface DataTableColumn {
 export const acmeGridTheme = themeQuartz.withParams({
   backgroundColor: 'var(--c-surface)',
   foregroundColor: 'var(--c-text)',
-  headerBackgroundColor: 'var(--c-surface-hover)',
-  headerTextColor: 'var(--c-text)',
+  headerBackgroundColor: 'var(--c-surface-2)',
+  headerTextColor: 'var(--c-muted)',
   borderColor: 'var(--c-border)',
+  rowBorder: { style: 'solid', width: 1, color: 'var(--c-border)' },
   rowHoverColor: 'var(--c-surface-hover)',
+  selectedRowBackgroundColor: 'color-mix(in srgb, var(--c-primary) 10%, var(--c-surface))',
   accentColor: 'var(--c-primary)',
+  fontFamily: "'Inter', system-ui, sans-serif",
+  fontSize: 13,
+  headerFontSize: 11,
+  headerFontWeight: 600,
+  headerHeight: 44,
+  rowHeight: 52,
+  cellHorizontalPadding: 16,
+  wrapperBorderRadius: 0,
+  wrapperBorder: false,
 });
 
 // Reusable AG Grid wrapper (sibling to shared/data-table). Client-side row
@@ -143,6 +161,29 @@ export class AgDataTable {
       } else if (c.editorType === 'select') {
         def.cellEditor = 'agSelectCellEditor';
         def.cellEditorParams = { values: c.editorParams?.values ?? [] };
+      }
+      // Rich-cell rendering (mirrors DataTable's cellType). Renderers coexist with
+      // inline editing: double-click swaps in the editor, commit recreates the cell.
+      switch (c.cellType) {
+        case 'user':
+          def.cellRenderer = UserCellComponent;
+          def.cellRendererParams = { secondaryField: c.secondaryKey };
+          def.minWidth = 200;
+          break;
+        case 'mono':
+          def.cellClass = 'font-mono';
+          break;
+        case 'genderBadge':
+          def.cellRenderer = BadgeCellComponent;
+          def.cellRendererParams = { badgeType: 'gender' };
+          break;
+        case 'designationBadge':
+          def.cellRenderer = BadgeCellComponent;
+          def.cellRendererParams = { badgeType: 'designation' };
+          break;
+        case 'pill':
+          def.cellRenderer = BadgeCellComponent;
+          break;
       }
       return def;
     });

@@ -7,10 +7,6 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatButtonModule } from '@angular/material/button';
 import { ProfileStore } from '../../core/profile-store';
 
 // A real email: non-empty local part, single @, a dotted domain with a 2+ char
@@ -38,13 +34,7 @@ function dobValidator(control: AbstractControl): ValidationErrors | null {
 // `Student` and the page is `Students`.
 @Component({
   selector: 'app-profile',
-  imports: [
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDatepickerModule,
-    MatButtonModule,
-  ],
+  imports: [ReactiveFormsModule],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
@@ -57,9 +47,10 @@ export class UserProfile {
 
   profileForm: FormGroup;
 
-  // Bounds for the datepicker calendar (typed input is also caught by dobValidator).
-  readonly today = new Date();
-  readonly minDob = new Date(1900, 0, 1);
+  // Bounds for the native date input (min/max want 'yyyy-mm-dd' strings). The
+  // dobValidator still guards typed/edge values.
+  readonly today = new Date().toISOString().slice(0, 10);
+  readonly minDob = '1900-01-01';
 
   constructor(private fb: FormBuilder) {
     this.store.loadProfile();
@@ -84,8 +75,8 @@ export class UserProfile {
           email: user.email ?? '',
           phone: user.phone ?? '',
           bio: user.bio ?? '',
-          // Material's datepicker wants a Date object; the API sends an ISO string.
-          dob: user.dob ? new Date(user.dob) : '',
+          // Native <input type="date"> binds a 'yyyy-mm-dd' string; the API sends ISO.
+          dob: user.dob ? new Date(user.dob).toISOString().slice(0, 10) : '',
           address: user.address ?? '',
         });
       }
@@ -108,6 +99,20 @@ export class UserProfile {
     const name = this.store.user()?.name ?? '';
     return name ? name.charAt(0).toUpperCase() : '?';
   });
+
+  // Discard unsaved edits — re-apply the last loaded user values to the form.
+  resetForm() {
+    const user = this.store.user();
+    if (!user) return;
+    this.profileForm.reset({
+      name: user.name ?? '',
+      email: user.email ?? '',
+      phone: user.phone ?? '',
+      bio: user.bio ?? '',
+      dob: user.dob ? new Date(user.dob).toISOString().slice(0, 10) : '',
+      address: user.address ?? '',
+    });
+  }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;

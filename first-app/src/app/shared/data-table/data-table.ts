@@ -8,6 +8,11 @@ export interface DataTableColumn {
   key: string;
   label: string;
   sortable?: boolean;
+  // Optional rich-cell rendering hint (mirrors the AG Grid wrapper's column shape
+  // so the two tables stay interchangeable). 'text' (default) renders plain text.
+  cellType?: 'user' | 'mono' | 'pill' | 'genderBadge' | 'designationBadge' | 'text';
+  // For the 'user' cell: the field holding the secondary line (e.g. email).
+  secondaryKey?: string;
 }
 
 @Component({
@@ -90,6 +95,28 @@ export class DataTable implements OnChanges {
 
   onSort(key: string) {
     this.sortChanged.emit(key);
+  }
+
+  // First-letter(s) for an avatar circle. Uses the first two words' initials,
+  // falling back to a single char. Pure — used by the 'user' rich cell.
+  initials(value: any): string {
+    const name = String(value ?? '').trim();
+    if (!name) return '?';
+    const parts = name.split(/\s+/);
+    return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase();
+  }
+
+  // Tailwind tint classes for the gender badge. Lowercased so it matches the
+  // schema enum regardless of how the value is cased.
+  genderBadgeClass(value: any): string {
+    switch (String(value ?? '').toLowerCase()) {
+      case 'male':
+        return 'bg-sky-500/15 text-sky-500';
+      case 'female':
+        return 'bg-pink-500/15 text-pink-500';
+      default:
+        return 'bg-surface-2 text-muted';
+    }
   }
 
   get displayedColumns(): string[] {

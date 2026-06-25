@@ -1,26 +1,70 @@
-<div class="flex h-full min-h-0 flex-col gap-5">
+<div class="flex h-full min-h-0 flex-col gap-4">
 
-  <!-- Page heading -->
-  <div class="flex items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight text-text">Students</h1>
-      <p class="mt-1 text-sm text-muted">Manage and search your student records.</p>
+  <!-- Search + Filters toolbar -->
+  <div class="flex flex-wrap items-center gap-2">
+
+    <!-- Search -->
+    <div class="relative min-w-[240px] flex-1 max-w-sm">
+      <svg
+        class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Search name, email, roll no…"
+        [value]="studentStore.search()"
+        (input)="onSearch($any($event.target).value)"
+        class="filter-control h-9 w-full rounded-lg border border-border-strong bg-surface py-2 pl-9 pr-4 text-sm text-text outline-none focus:border-primary">
     </div>
 
-    <div class="flex items-center gap-3">
-      @if (canManage()) {
-        <button mat-flat-button color="primary" (click)="openAddStudentDialog()">
-          + Add Student
+    <!-- Grade -->
+    <select
+      [value]="studentStore.filters().grade"
+      (change)="onFilterChange('grade', $any($event.target).value)"
+      class="filter-control h-9 rounded-lg border border-border-strong bg-surface px-3 text-sm font-medium text-text outline-none focus:border-primary">
+      <option value="">All grades</option>
+      @for (g of grades; track g) {
+        <option [value]="g">Grade {{ g }}</option>
+      }
+    </select>
+
+    <!-- Gender chips -->
+    <div class="flex items-center gap-1 rounded-lg border border-border-strong bg-surface p-0.5">
+      @for (opt of genderChips; track opt.value) {
+        <button
+          type="button"
+          (click)="onFilterChange('gender', opt.value)"
+          class="rounded-md px-2.5 py-1 text-xs font-semibold transition-colors"
+          [class]="studentStore.filters().gender === opt.value ? 'bg-primary/10 text-primary' : 'text-muted hover:text-text'">
+          {{ opt.label }}
         </button>
       }
     </div>
+
+    <button
+      class="reset-btn flex h-9 items-center gap-1.5 rounded-lg border border-border-strong bg-surface px-3 text-sm font-medium text-muted hover:text-text"
+      (click)="clearFilters()">
+      ↺ Reset
+    </button>
+
+    <div class="flex-1"></div>
+
+    @if (canManage()) {
+      <button
+        (click)="openAddStudentDialog()"
+        class="flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-hover">
+        <span class="text-base leading-none">+</span> Add student
+      </button>
+    }
   </div>
 
   <!-- Bulk-action panel: slim bar that appears only while rows are selected.
        Lets you set the SAME grade/gender on every selected student at once (leave a
        field blank to keep it unchanged), or bulk-delete them. -->
   @if (canManage() && selectedStudents.length) {
-    <div class="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-card">
+    <div class="flex flex-wrap items-center gap-3 rounded-[14px] border border-primary/30 bg-primary/[0.07] px-4 py-2.5">
       <span class="text-sm font-medium text-text">
         {{ selectedStudents.length }} student{{ selectedStudents.length > 1 ? 's' : '' }} selected
       </span>
@@ -69,76 +113,8 @@
     </div>
   }
 
-  <!-- Search + Filters -->
-  <div class="rounded-xl border border-border bg-surface p-3 shadow-card">
-    <div class="flex flex-wrap items-center gap-2">
-
-      <!-- Search -->
-      <div class="relative flex-1 min-w-[260px]">
-        <svg
-          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
-        <input
-          type="text"
-          placeholder="Search students..."
-          [value]="studentStore.search()"
-          (input)="onSearch($any($event.target).value)"
-          class="filter-control w-full rounded-lg border border-border bg-surface py-2 pl-10 pr-4 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
-      </div>
-
-      <!-- Grade -->
-      <select
-        [value]="studentStore.filters().grade"
-        (change)="onFilterChange('grade', $any($event.target).value)"
-        class="filter-control rounded-lg border border-border bg-surface px-4 py-2 text-sm text-text outline-none focus:border-primary">
-        <option value="">All Grades</option>
-        @for (g of [1,2,3,4,5,6,7,8,9,10,11,12]; track g) {
-          <option [value]="g">Grade {{ g }}</option>
-        }
-      </select>
-
-      <!-- Gender -->
-      <select
-        [value]="studentStore.filters().gender"
-        (change)="onFilterChange('gender', $any($event.target).value)"
-        class="filter-control rounded-lg border border-border bg-surface px-4 py-2 text-sm text-text outline-none focus:border-primary">
-        <option value="">All Genders</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="other">Other</option>
-      </select>
-
-      <!-- Roll No -->
-      <input
-        type="text"
-        placeholder="Roll No"
-        [value]="studentStore.filters().rollno"
-        (input)="onFilterChange('rollno', $any($event.target).value)"
-        class="filter-control w-32 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
-
-      <!-- Phone -->
-      <input
-        type="text"
-        placeholder="Phone"
-        [value]="studentStore.filters().phone"
-        (input)="onFilterChange('phone', $any($event.target).value)"
-        class="filter-control w-40 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
-
-      <!-- Reset Filters -->
-      <button
-        class="reset-btn rounded-lg bg-surface-hover px-4 py-2 text-sm font-medium text-muted hover:text-text"
-        (click)="clearFilters()">
-        ↺ Reset
-      </button>
-
-    </div>
-  </div>
-
   <!-- Table -->
-  <div class="flex flex-1 min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+  <div class="flex flex-1 min-h-0 flex-col overflow-hidden rounded-[14px] border border-border bg-surface shadow-card">
 
     <div class="flex-1 overflow-auto">
       <app-data-table

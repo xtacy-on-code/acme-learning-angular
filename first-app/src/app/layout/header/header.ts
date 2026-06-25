@@ -19,6 +19,8 @@ export class Header {
   // The current page's title, shown on the left of the header. Kept in sync with
   // the active route so the header always reflects where you are.
   readonly pageTitle = signal(this.titleFor(this.router.url));
+  // A short descriptive subtitle under the title — purely informational chrome.
+  readonly pageSubtitle = signal(this.subtitleFor(this.router.url));
 
   constructor() {
     // Safe to call even though the profile page also calls it — loadProfile()
@@ -31,7 +33,10 @@ export class Header {
         filter((e): e is NavigationEnd => e instanceof NavigationEnd),
         takeUntilDestroyed()
       )
-      .subscribe((e) => this.pageTitle.set(this.titleFor(e.urlAfterRedirects)));
+      .subscribe((e) => {
+        this.pageTitle.set(this.titleFor(e.urlAfterRedirects));
+        this.pageSubtitle.set(this.subtitleFor(e.urlAfterRedirects));
+      });
   }
 
   private titleFor(url: string): string {
@@ -41,6 +46,15 @@ export class Header {
     if (url.startsWith('/profile')) return 'Profile';
     if (url.startsWith('/home')) return 'Home';
     return 'Overview';
+  }
+
+  private subtitleFor(url: string): string {
+    if (url.startsWith('/students')) return 'Manage student records and enrolment';
+    if (url.startsWith('/professors')) return 'Faculty directory and inline editing';
+    if (url.startsWith('/gallery')) return 'Campus life in pictures';
+    if (url.startsWith('/profile')) return 'Your account and personal details';
+    if (url.startsWith('/home')) return 'A snapshot of your institution';
+    return 'Welcome back';
   }
 
   readonly userName = computed(() => this.store.user()?.name ?? '');

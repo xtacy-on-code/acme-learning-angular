@@ -1,26 +1,29 @@
-<div class="flex h-full min-h-0 flex-col gap-5">
+<div class="flex h-full min-h-0 flex-col gap-4">
 
-  <!-- Page heading -->
-  <div class="flex items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight text-text">Professors</h1>
-      <p class="mt-1 text-sm text-muted">Manage faculty records. Sort, filter and page directly in the grid.</p>
-    </div>
-
-    <div class="flex items-center gap-3">
-      @if (canManage()) {
-        <button mat-flat-button color="primary" (click)="openAddProfessorDialog()">
-          + Add Professor
-        </button>
-      }
-    </div>
+  <!-- Toolbar -->
+  <div class="flex flex-wrap items-center gap-3">
+    @if (canManage()) {
+      <span class="flex items-center gap-2 text-xs text-muted">
+        <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+        Double-click a cell to edit inline
+      </span>
+    }
+    <div class="flex-1"></div>
+    <span class="text-sm text-faint">{{ professorStore.professors().length }} faculty</span>
+    @if (canManage()) {
+      <button
+        (click)="openAddProfessorDialog()"
+        class="flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-hover">
+        <span class="text-base leading-none">+</span> Add professor
+      </button>
+    }
   </div>
 
   <!-- Bulk-action panel: slim bar that appears only while rows are selected.
        Lets you set the SAME department/designation on every selected professor at
        once (leave a field blank to keep it unchanged), or bulk-delete them. -->
   @if (canManage() && selectedProfessors.length) {
-    <div class="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-card">
+    <div class="flex flex-wrap items-center gap-3 rounded-[14px] border border-primary/30 bg-primary/[0.07] px-4 py-2.5">
       <span class="text-sm font-medium text-text">
         {{ selectedProfessors.length }} professor{{ selectedProfessors.length > 1 ? 's' : '' }} selected
       </span>
@@ -67,7 +70,7 @@
   }
 
   <!-- Grid (autoHeight: sizes to its rows, so the card grows with content) -->
-  <div class="overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+  <div class="overflow-hidden rounded-[14px] border border-border bg-surface shadow-card">
     <app-ag-data-table
       [data]="professorStore.professors()"
       [columns]="columns"

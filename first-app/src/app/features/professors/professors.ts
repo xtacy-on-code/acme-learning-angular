@@ -23,15 +23,15 @@ export class Professors {
   // select (designation/gender). Note employeeId has a unique index — editing it
   // to a value that already exists fails server-side and the cell reverts.
   columns: DataTableColumn[] = [
-    { key: 'name', label: 'Name', sortable: true, editable: true, editorType: 'text' },
-    { key: 'employeeId', label: 'Employee ID', sortable: true, editable: true, editorType: 'text' },
+    { key: 'name', label: 'Professor', sortable: true, editable: true, editorType: 'text', cellType: 'user' },
+    { key: 'employeeId', label: 'Employee ID', sortable: true, editable: true, editorType: 'text', cellType: 'mono' },
     { key: 'department', label: 'Department', sortable: true, editable: true, editorType: 'text' },
-    { key: 'designation', label: 'Designation', sortable: true, editable: true, editorType: 'select', editorParams: { values: DESIGNATIONS } },
+    { key: 'designation', label: 'Designation', sortable: true, editable: true, editorType: 'select', editorParams: { values: DESIGNATIONS }, cellType: 'designationBadge' },
     { key: 'specialization', label: 'Specialization', sortable: true, editable: true, editorType: 'text' },
     { key: 'experience', label: 'Experience (yrs)', sortable: true, editable: true, editorType: 'number' },
-    { key: 'gender', label: 'Gender', sortable: true, editable: true, editorType: 'select', editorParams: { values: ['male', 'female', 'other'] } },
+    { key: 'gender', label: 'Gender', sortable: true, editable: true, editorType: 'select', editorParams: { values: ['male', 'female', 'other'] }, cellType: 'genderBadge' },
     { key: 'email', label: 'Email', sortable: true, editable: true, editorType: 'text' },
-    { key: 'phone', label: 'Phone', sortable: true, editable: true, editorType: 'text' },
+    { key: 'phone', label: 'Phone', sortable: true, editable: true, editorType: 'text', cellType: 'mono' },
   ];
 
   // Reference to the grid wrapper so we can revert a cell on a failed save.

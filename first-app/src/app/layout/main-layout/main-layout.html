@@ -2,8 +2,10 @@
   <app-sidebar />
   <div class="flex flex-1 flex-col">
     <app-header />
-    <main class="flex min-h-0 flex-1 flex-col overflow-y-auto bg-background p-8">
-      <router-outlet />
+    <main class="flex min-h-0 flex-1 flex-col overflow-y-auto bg-background">
+      <div class="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-7 py-6">
+        <router-outlet />
+      </div>
     </main>
     <app-footer />
   </div>
