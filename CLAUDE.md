@@ -131,8 +131,14 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   small role-badge chip) from `ProfileStore`; it's `sticky` with a backdrop blur. **The feature
   pages no longer carry their own `<h1>`** — the header is the single place the page title/subtitle
   appear, so each routed page starts straight at its content/toolbar. `main-layout` centers the
-  routed content in a `max-w-[1280px]` column; the `sidebar` marks the active nav link with a
-  `bg-primary/10 text-primary` **pill** (not a left border). `DataTable` takes a `loading` input and
+  routed content in a `max-w-[1680px]` column with fluid horizontal padding
+  `px-[clamp(28px,3vw,56px)]`. The **header keeps the same alignment**: the `<header>` bar spans
+  the full viewport (border + blur edge-to-edge), but its inner content (title + user menu) is
+  wrapped in an identical `mx-auto max-w-[1680px] px-[clamp(28px,3vw,56px)]` container so the title
+  stays left-aligned with the page content at any monitor width — **keep these two in sync** (change
+  the max-width or padding in both the `main-layout` wrapper and the header's inner wrapper). The
+  `sidebar` marks the active nav link with a `bg-primary/10 text-primary` **pill** (not a left
+  border). `DataTable` takes a `loading` input and
   renders three states: skeleton rows while loading, a centered empty state when there are no rows,
   else the table.
   `shared/chart` (`ChartComponent`, selector `app-chart`) is a thin reusable wrapper over

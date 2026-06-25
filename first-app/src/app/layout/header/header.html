@@ -1,5 +1,6 @@
 <header
-  class="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background/80 px-7 backdrop-blur-md">
+  class="sticky top-0 z-20 flex h-16 shrink-0 border-b border-border bg-background/80 backdrop-blur-md">
+  <div class="mx-auto flex h-full w-full max-w-[1680px] items-center justify-between px-[clamp(28px,3vw,56px)]">
   <div class="min-w-0">
     <h1 class="truncate text-lg font-bold tracking-tight text-text">{{ pageTitle() }}</h1>
     <p class="mt-0.5 truncate text-xs text-muted">{{ pageSubtitle() }}</p>
@@ -35,5 +36,6 @@
         </div>
       }
     </div>
+  </div>
   </div>
 </header>
