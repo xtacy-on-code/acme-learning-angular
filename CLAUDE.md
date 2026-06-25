@@ -155,6 +155,23 @@ native date adapter (Angular Material), and `provideHttpClient(withInterceptors(
   — a **wholesale replace** of the `stats` object, so any field the `/stats` payload omits (e.g. a
   stale Redis cache from before `byGrade` existed) becomes `undefined`; the grade config defends
   with `byGrade ?? []` before sorting/mapping.
+- **Home is a customizable dashboard (GridStack).** The 6 boxes (4 stat cards + 2 chart cards) live
+  in a **draggable + resizable grid** built on **`gridstack`** (used directly via the vanilla
+  `GridStack.init()` API — same "use the lib directly to dodge Angular peer-dep issues" reasoning as
+  Chart.js/AG Grid; the heavy JS lands in the lazy `home` chunk, only the small base CSS is global in
+  `styles.css`). Each box is a `.grid-stack-item` with a `gs-id` and `gs-min-w`/`gs-min-h` floors,
+  its `gs-x/y/w/h` **bound from a `layout` map** seeded by `loadLayout()` (the saved arrangement from
+  `localStorage` key `acme-home-layout`, else `defaultLayout`). Init opts: `column:12`,
+  `float:false` (magnetic — boxes gravitate/pack, no free gaps), whole-card drag with
+  `draggable.cancel` excluding `a,button,input,select,textarea` (so the "View all" link still
+  works), `resizable.handles` on **all 8 edges/corners** (handles styled **invisible** in
+  `styles.css` — cursor-only, so no glyph clashes with the rounded cards), and a `columnOpts`
+  breakpoint that collapses to 1 column under 768px. A `'change'` listener calls `saveLayout()`
+  (`grid.save(false)` → id→pos map → localStorage); a **Reset layout** button (`resetLayout()`)
+  clears storage and `grid.update()`s every box back to `defaultLayout`. `grid.destroy(false)` in
+  `ngOnDestroy` leaves the DOM to Angular. The charts fill their box (`app-chart` is `h-full`;
+  `chart.html` is `h-full min-h-[160px]`) and resize live via Chart.js `responsive`. **Gotcha:**
+  installing `gridstack` requires restarting a running `ng serve` so the new import resolves.
 - **Class-name gotcha:** the profile HTTP service is `Profile` (`core/profile.ts`); the
   routed page component is therefore `UserProfile` (`features/profile/profile.ts`, selector
   `app-profile`) to avoid colliding with it — same way the service is `Student` and the

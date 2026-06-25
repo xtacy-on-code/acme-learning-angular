@@ -1,77 +1,128 @@
-<div class="flex flex-col gap-4">
+<!-- Dashboard toolbar -->
+<div class="mb-3 flex items-center justify-between gap-3">
+  <p class="text-xs text-muted">
+    Drag the <span class="font-semibold text-text">⠿</span> grip to rearrange · drag a box's
+    bottom-right corner to resize.
+  </p>
+  <button (click)="resetLayout()"
+          class="flex h-8 items-center gap-1.5 rounded-lg border border-border-strong bg-surface px-3 text-xs font-semibold text-muted transition-colors hover:text-text">
+    ↺ Reset layout
+  </button>
+</div>
 
-  <!-- Stats -->
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<!-- Resizable / draggable dashboard grid (GridStack) -->
+<div class="grid-stack" #grid>
 
-    <a routerLink="/students"
-       class="group rounded-[14px] border border-border bg-surface p-[18px] shadow-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/60">
-      <div class="flex items-center justify-between">
-        <p class="text-xs font-semibold uppercase tracking-wide text-muted">Total students</p>
-        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+  <!-- Total students -->
+  <div class="grid-stack-item" gs-id="total" gs-min-w="2" gs-min-h="2"
+       [attr.gs-x]="layout['total'].x" [attr.gs-y]="layout['total'].y"
+       [attr.gs-w]="layout['total'].w" [attr.gs-h]="layout['total'].h">
+    <div class="grid-stack-item-content">
+      <div class="group relative flex h-full cursor-move flex-col rounded-[14px] border border-border bg-surface p-[18px] shadow-card">
+        <span class="absolute right-2 top-2 z-10 text-faint opacity-0 transition-opacity group-hover:opacity-100" title="Drag to move" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
         </span>
+        <p class="pr-7 text-xs font-semibold uppercase tracking-wide text-muted">Total students</p>
+        <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ totalStudents() }}</p>
+        <a routerLink="/students" class="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-muted transition-colors hover:text-primary">
+          View all students
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </a>
       </div>
-      <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ totalStudents() }}</p>
-      <p class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-muted transition-colors group-hover:text-primary">
-        View all students
-        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
-        </svg>
-      </p>
-    </a>
-
-    <div class="rounded-[14px] border border-border bg-surface p-[18px] shadow-card">
-      <div class="flex items-center justify-between">
-        <p class="text-xs font-semibold uppercase tracking-wide text-muted">Male</p>
-        <span class="rounded-md bg-sky-500/15 px-2 py-0.5 text-xs font-semibold text-sky-500">{{ malePct() }}%</span>
-      </div>
-      <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ maleCount() }}</p>
-      <p class="mt-1 text-xs text-faint">of {{ totalStudents() }} students</p>
     </div>
-
-    <div class="rounded-[14px] border border-border bg-surface p-[18px] shadow-card">
-      <div class="flex items-center justify-between">
-        <p class="text-xs font-semibold uppercase tracking-wide text-muted">Female</p>
-        <span class="rounded-md bg-pink-500/15 px-2 py-0.5 text-xs font-semibold text-pink-500">{{ femalePct() }}%</span>
-      </div>
-      <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ femaleCount() }}</p>
-      <p class="mt-1 text-xs text-faint">of {{ totalStudents() }} students</p>
-    </div>
-
-    <div class="rounded-[14px] border border-border bg-surface p-[18px] shadow-card">
-      <div class="flex items-center justify-between">
-        <p class="text-xs font-semibold uppercase tracking-wide text-muted">Other</p>
-        <span class="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold text-muted">{{ otherPct() }}%</span>
-      </div>
-      <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ otherCount() }}</p>
-      <p class="mt-1 text-xs text-faint">of {{ totalStudents() }} students</p>
-    </div>
-
   </div>
 
-  <!-- Charts: grade distribution (wide) + gender split -->
-  <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-
-    <div class="rounded-[14px] border border-border bg-surface p-5 shadow-card lg:col-span-2">
-      <p class="text-sm font-semibold text-text">Grade distribution</p>
-      <p class="mt-1 text-xs text-muted">Number of students in each grade.</p>
-      <div class="mt-4">
-        <app-chart [config]="gradeChartConfig()" />
+  <!-- Male -->
+  <div class="grid-stack-item" gs-id="male" gs-min-w="2" gs-min-h="2"
+       [attr.gs-x]="layout['male'].x" [attr.gs-y]="layout['male'].y"
+       [attr.gs-w]="layout['male'].w" [attr.gs-h]="layout['male'].h">
+    <div class="grid-stack-item-content">
+      <div class="group relative flex h-full cursor-move flex-col rounded-[14px] border border-border bg-surface p-[18px] shadow-card">
+        <span class="absolute right-2 top-2 z-10 text-faint opacity-0 transition-opacity group-hover:opacity-100" title="Drag to move" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
+        </span>
+        <div class="flex items-center justify-between pr-7">
+          <p class="text-xs font-semibold uppercase tracking-wide text-muted">Male</p>
+          <span class="rounded-md bg-sky-500/15 px-2 py-0.5 text-xs font-semibold text-sky-500">{{ malePct() }}%</span>
+        </div>
+        <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ maleCount() }}</p>
+        <p class="mt-1 text-xs text-faint">of {{ totalStudents() }} students</p>
       </div>
     </div>
+  </div>
 
-    <div class="rounded-[14px] border border-border bg-surface p-5 shadow-card">
-      <p class="text-sm font-semibold text-text">Gender breakdown</p>
-      <p class="mt-1 text-xs text-muted">Share of students by gender.</p>
-      <div class="mt-4">
-        <app-chart [config]="genderChartConfig()" />
+  <!-- Female -->
+  <div class="grid-stack-item" gs-id="female" gs-min-w="2" gs-min-h="2"
+       [attr.gs-x]="layout['female'].x" [attr.gs-y]="layout['female'].y"
+       [attr.gs-w]="layout['female'].w" [attr.gs-h]="layout['female'].h">
+    <div class="grid-stack-item-content">
+      <div class="group relative flex h-full cursor-move flex-col rounded-[14px] border border-border bg-surface p-[18px] shadow-card">
+        <span class="absolute right-2 top-2 z-10 text-faint opacity-0 transition-opacity group-hover:opacity-100" title="Drag to move" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
+        </span>
+        <div class="flex items-center justify-between pr-7">
+          <p class="text-xs font-semibold uppercase tracking-wide text-muted">Female</p>
+          <span class="rounded-md bg-pink-500/15 px-2 py-0.5 text-xs font-semibold text-pink-500">{{ femalePct() }}%</span>
+        </div>
+        <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ femaleCount() }}</p>
+        <p class="mt-1 text-xs text-faint">of {{ totalStudents() }} students</p>
       </div>
     </div>
+  </div>
 
+  <!-- Other -->
+  <div class="grid-stack-item" gs-id="other" gs-min-w="2" gs-min-h="2"
+       [attr.gs-x]="layout['other'].x" [attr.gs-y]="layout['other'].y"
+       [attr.gs-w]="layout['other'].w" [attr.gs-h]="layout['other'].h">
+    <div class="grid-stack-item-content">
+      <div class="group relative flex h-full cursor-move flex-col rounded-[14px] border border-border bg-surface p-[18px] shadow-card">
+        <span class="absolute right-2 top-2 z-10 text-faint opacity-0 transition-opacity group-hover:opacity-100" title="Drag to move" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
+        </span>
+        <div class="flex items-center justify-between pr-7">
+          <p class="text-xs font-semibold uppercase tracking-wide text-muted">Other</p>
+          <span class="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold text-muted">{{ otherPct() }}%</span>
+        </div>
+        <p class="mt-2.5 text-3xl font-bold tracking-tight text-text tabular-nums">{{ otherCount() }}</p>
+        <p class="mt-1 text-xs text-faint">of {{ totalStudents() }} students</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grade distribution -->
+  <div class="grid-stack-item" gs-id="grade" gs-min-w="3" gs-min-h="3"
+       [attr.gs-x]="layout['grade'].x" [attr.gs-y]="layout['grade'].y"
+       [attr.gs-w]="layout['grade'].w" [attr.gs-h]="layout['grade'].h">
+    <div class="grid-stack-item-content">
+      <div class="group relative flex h-full cursor-move flex-col rounded-[14px] border border-border bg-surface p-5 shadow-card">
+        <span class="absolute right-2 top-2 z-10 text-faint opacity-0 transition-opacity group-hover:opacity-100" title="Drag to move" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
+        </span>
+        <p class="pr-7 text-sm font-semibold text-text">Grade distribution</p>
+        <p class="mt-1 text-xs text-muted">Number of students in each grade.</p>
+        <div class="mt-4 min-h-0 flex-1">
+          <app-chart class="block h-full" [config]="gradeChartConfig()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gender breakdown -->
+  <div class="grid-stack-item" gs-id="gender" gs-min-w="3" gs-min-h="3"
+       [attr.gs-x]="layout['gender'].x" [attr.gs-y]="layout['gender'].y"
+       [attr.gs-w]="layout['gender'].w" [attr.gs-h]="layout['gender'].h">
+    <div class="grid-stack-item-content">
+      <div class="group relative flex h-full cursor-move flex-col rounded-[14px] border border-border bg-surface p-5 shadow-card">
+        <span class="absolute right-2 top-2 z-10 text-faint opacity-0 transition-opacity group-hover:opacity-100" title="Drag to move" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
+        </span>
+        <p class="pr-7 text-sm font-semibold text-text">Gender breakdown</p>
+        <p class="mt-1 text-xs text-muted">Share of students by gender.</p>
+        <div class="mt-4 min-h-0 flex-1">
+          <app-chart class="block h-full" [config]="genderChartConfig()" />
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>

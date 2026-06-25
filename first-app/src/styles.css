@@ -1,6 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+/* Gridstack powers the draggable/resizable Home dashboard. Its base CSS is global
+   (gridstack creates drag/resize handles outside Angular's view), but the heavy
+   gridstack JS is imported in the lazy Home component so it stays in that chunk. */
+@import 'gridstack/dist/gridstack.min.css';
 
 /*
   THEME SYSTEM
@@ -197,6 +201,33 @@
   outline: 2px solid var(--c-primary);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Gridstack dashboard (Home): let card shadows show, and theme the drag
+   placeholder + resize handle to our tokens. The widget card fills its cell. */
+.grid-stack-item-content {
+  inset: 0;
+  overflow: visible;
+}
+.grid-stack-placeholder > .placeholder-content {
+  background: color-mix(in srgb, var(--c-primary) 12%, transparent);
+  border: 1px dashed var(--c-primary);
+  border-radius: 14px;
+}
+/* Resize handles on every edge/corner, but invisible — no drawn glyph to clash
+   with the cards' rounded corners. The cursor still changes on hover, and the
+   corner handles get a slightly larger hit area so they're easy to grab. */
+.grid-stack-item > .ui-resizable-handle {
+  background-image: none;
+  border: none;
+  opacity: 0;
+}
+.grid-stack-item > .ui-resizable-nw,
+.grid-stack-item > .ui-resizable-ne,
+.grid-stack-item > .ui-resizable-sw,
+.grid-stack-item > .ui-resizable-se {
+  width: 16px;
+  height: 16px;
 }
 
 /* Crisp font rendering for the dashboard typography */
