@@ -105,12 +105,19 @@ export class Home implements AfterViewInit, OnDestroy {
     localStorage.removeItem(LAYOUT_KEY);
     const grid = this.grid;
     if (!grid) return;
+    // Turn gravity OFF while we set positions, so moving one box can't shove another
+    // (with float:false a not-yet-moved box collides and gets pushed below grade —
+    // the intermittent bug). Each box then lands exactly where told.
+    grid.float(true);
     grid.batchUpdate();
     for (const [id, p] of Object.entries(this.defaultLayout)) {
       const el = this.gridEl().nativeElement.querySelector(`[gs-id="${id}"]`) as HTMLElement | null;
-      if (el) grid.update(el, p);
+      if (el) grid.update(el, { ...p, autoPosition: false });
     }
     grid.batchUpdate(false); // end the batch (GridStack 12 replaced commit())
+    // Restore magnetic behavior. The default layout is already fully packed, so this
+    // re-compaction is a no-op — but it re-enables gravity for subsequent drags.
+    grid.float(false);
   }
 
   totalStudents = computed(() => this.studentStore.stats().total);
